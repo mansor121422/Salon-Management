@@ -1,133 +1,91 @@
-<?= $this->extend('layouts/main') ?>
-
-<?= $this->section('content') ?>
-<style>
-    .login-container {
-        max-width: 450px;
-        margin: 4rem auto;
-    }
-
-    .login-card {
-        background: white;
-        border-radius: 15px;
-        padding: 3rem;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        animation: fadeIn 0.5s ease;
-    }
-
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            purple: '#5A2C76', 
+                            dark: '#2C0A4B',   
+                        }
+                    }
+                }
+            }
         }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
+    </script>
+</head>
+<body class="bg-gray-50 font-sans antialiased text-gray-800">
 
-    .login-header {
-        text-align: center;
-        margin-bottom: 2rem;
-    }
+    <header class="bg-gradient-to-r from-brand-purple to-brand-dark text-white pt-6 pb-20 md:pb-32 px-4 md:px-10">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
 
-    .login-header h1 {
-        color: #667eea;
-        font-size: 2rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .login-header p {
-        color: #666;
-        font-size: 0.95rem;
-    }
-
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-
-    .form-group label {
-        display: block;
-        margin-bottom: 0.5rem;
-        color: #333;
-        font-weight: 500;
-    }
-
-    .form-control {
-        width: 100%;
-        padding: 0.875rem;
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
-        font-size: 1rem;
-        transition: all 0.3s;
-    }
-
-    .form-control:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-
-    .btn {
-        width: 100%;
-        padding: 1rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-
-    .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-    }
-
-    .login-info {
-        margin-top: 2rem;
-        padding: 1rem;
-        background: #f8f9fa;
-        border-radius: 8px;
-        font-size: 0.85rem;
-        color: #666;
-    }
-
-    .login-info strong {
-        color: #333;
-    }
-</style>
-
-<div class="login-container">
-    <div class="login-card">
-        <div class="login-header">
-            <h1>💇 Salon Login</h1>
-            <p>Receptionist Dashboard Access</p>
-        </div>
-
-        <form action="<?= base_url('login') ?>" method="post">
-            <?= csrf_field() ?>
-            
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" class="form-control" required autofocus>
+            <div class="flex items-center space-x-2">
+                <div class="flex space-x-0.5">
+                    <span class="w-4 h-4 rounded-full border-2 border-white inline-block"></span>
+                    <span class="w-4 h-4 rounded-full border-2 border-white inline-block"></span>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold tracking-tight uppercase">Salon</h1>
             </div>
 
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" class="form-control" required>
-            </div>
+            <nav class="hidden md:flex items-center space-x-8 text-sm font-medium">
+                <a href="#" class="hover:text-gray-200">Home</a>
+                <a href="#" class="hover:text-gray-200">About</a>
+                <a href="#" class="hover:text-gray-200">Contact</a>
+            </nav>
 
-            <button type="submit" class="btn">Login</button>
-        </form>
-
-        <div class="login-info">
-            <strong>Demo Credentials:</strong><br>
-            Username: <code>receptionist</code><br>
-            Password: <code>receptionist123</code>
         </div>
-    </div>
-</div>
-<?= $this->endSection() ?>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 -mt-16 md:-mt-24 pb-16">
+
+        <div class="bg-white p-8 md:p-12 rounded-3xl shadow-2xl max-w-lg mx-auto">
+
+            <h2 class="text-3xl md:text-4xl font-extrabold text-brand-dark text-center mb-10">Login</h2>
+
+            <?php if (session()->getFlashdata('error')): ?>
+                <div class="text-red-500 text-center mb-4">
+                    <?= session()->getFlashdata('error') ?>
+                </div>
+            <?php endif; ?>
+
+            <form class="space-y-6" action="<?= base_url('login') ?>" method="post">
+                <?= csrf_field() ?>
+
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1.5">Username</label>
+                    <input type="text" id="username" name="username" placeholder="" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-brand-purple focus:border-brand-purple text-gray-900 placeholder-gray-400 focus:outline-none transition" autofocus>
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+                    <input type="password" id="password" name="password" placeholder="••••••••" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-brand-purple focus:border-brand-purple text-gray-900 placeholder-gray-400 focus:outline-none transition">
+                </div>
+
+                <div class="text-right">
+                    <a href="#" class="text-sm text-brand-purple hover:text-brand-dark transition">Forgot Password?</a>
+                </div>
+
+                <div>
+                    <button type="submit"
+                        class="w-full flex justify-center py-3.5 px-6 border border-transparent rounded-xl shadow-md text-base font-semibold text-white bg-gradient-to-r from-brand-purple to-brand-dark hover:from-brand-dark hover:to-brand-purple focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-purple transition duration-200">
+                        Login
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <footer class="text-center text-sm text-gray-500 py-8">
+        © 2024 My Salon Manager. All rights reserved.
+    </footer>
+
+</body>
+</html>

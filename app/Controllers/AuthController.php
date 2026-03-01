@@ -37,7 +37,7 @@ class AuthController extends BaseController
                 return redirect()->to(base_url('login'));
             }
         } else {
-            $session->setFlashdata('error', 'Username not found');
+            $session->setFlashdata('error', 'Invalid username');
             return redirect()->to(base_url('login'));
         }
     }
