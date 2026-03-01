@@ -95,10 +95,22 @@ function validateForm() {
     return isNameValid && isPhoneValid && isNotesValid;
 }
 
+// Auto-populate price when service is selected
+function updatePrice() {
+    const serviceSelect = document.getElementById('service_type');
+    const priceInput = document.getElementById('price');
+    const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+    
+    if (selectedOption.value && selectedOption.dataset.price) {
+        priceInput.value = selectedOption.dataset.price;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const nameInput = document.getElementById('customer_name');
     const phoneInput = document.getElementById('customer_phone');
     const notesInput = document.getElementById('notes');
+    const serviceSelect = document.getElementById('service_type');
     
     if (nameInput) {
         nameInput.addEventListener('input', validateCustomerName);
@@ -113,6 +125,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (notesInput) {
         notesInput.addEventListener('input', validateNotes);
         notesInput.addEventListener('blur', validateNotes);
+    }
+    
+    if (serviceSelect) {
+        serviceSelect.addEventListener('change', updatePrice);
     }
     
     const form = document.querySelector('form');
@@ -175,18 +191,45 @@ document.addEventListener('DOMContentLoaded', function() {
                         class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all duration-300 cursor-pointer"
                         required>
                     <option value="">-- Select Service --</option>
-                    <option value="Haircut" <?= old('service_type') == 'Haircut' ? 'selected' : '' ?>>Haircut</option>
-                    <option value="Hair Coloring" <?= old('service_type') == 'Hair Coloring' ? 'selected' : '' ?>>Hair Coloring</option>
-                    <option value="Hair Styling" <?= old('service_type') == 'Hair Styling' ? 'selected' : '' ?>>Hair Styling</option>
-                    <option value="Hair Treatment" <?= old('service_type') == 'Hair Treatment' ? 'selected' : '' ?>>Hair Treatment</option>
-                    <option value="Manicure" <?= old('service_type') == 'Manicure' ? 'selected' : '' ?>>Manicure</option>
-                    <option value="Pedicure" <?= old('service_type') == 'Pedicure' ? 'selected' : '' ?>>Pedicure</option>
-                    <option value="Facial" <?= old('service_type') == 'Facial' ? 'selected' : '' ?>>Facial</option>
-                    <option value="Makeup" <?= old('service_type') == 'Makeup' ? 'selected' : '' ?>>Makeup</option>
+                    <?php if (!empty($service_prices)): ?>
+                        <?php foreach ($service_prices as $service): ?>
+                            <option value="<?= esc($service->service_name) ?>" data-price="<?= esc($service->price) ?>" <?= old('service_type') == $service->service_name ? 'selected' : '' ?>>
+                                <?= esc($service->service_name) ?> - ₱<?= number_format($service->price, 2) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <option value="Haircut" <?= old('service_type') == 'Haircut' ? 'selected' : '' ?>>Haircut</option>
+                        <option value="Hair Coloring" <?= old('service_type') == 'Hair Coloring' ? 'selected' : '' ?>>Hair Coloring</option>
+                        <option value="Hair Styling" <?= old('service_type') == 'Hair Styling' ? 'selected' : '' ?>>Hair Styling</option>
+                        <option value="Hair Treatment" <?= old('service_type') == 'Hair Treatment' ? 'selected' : '' ?>>Hair Treatment</option>
+                        <option value="Manicure" <?= old('service_type') == 'Manicure' ? 'selected' : '' ?>>Manicure</option>
+                        <option value="Pedicure" <?= old('service_type') == 'Pedicure' ? 'selected' : '' ?>>Pedicure</option>
+                        <option value="Facial" <?= old('service_type') == 'Facial' ? 'selected' : '' ?>>Facial</option>
+                        <option value="Makeup" <?= old('service_type') == 'Makeup' ? 'selected' : '' ?>>Makeup</option>
+                    <?php endif; ?>
                 </select>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Assign Staff Dropdown -->
+            <div class="mb-6">
+                <label for="staff_id" class="block mb-2 text-gray-700 font-medium">
+                    Assign Staff (Optional)
+                </label>
+                <select id="staff_id" name="staff_id" 
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all duration-300 cursor-pointer">
+                    <option value="">-- Select Staff --</option>
+                    <?php if (!empty($staff)): ?>
+                        <?php foreach ($staff as $member): ?>
+                            <option value="<?= esc($member['id']) ?>" <?= old('staff_id') == $member['id'] ? 'selected' : '' ?>>
+                                <?= esc($member['name']) ?> (<?= esc($member['role']) ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </select>
+                <p class="mt-1 text-sm text-gray-500">Leave empty if no specific staff member is assigned</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div>
                     <label for="appointment_date" class="block mb-2 text-gray-700 font-medium">
                         Appointment Date <span class="text-red-500">*</span>
@@ -203,6 +246,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     <input type="time" id="appointment_time" name="appointment_time" 
                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all duration-300"
                            value="<?= old('appointment_time') ?>" required>
+                </div>
+
+                <div>
+                    <label for="price" class="block mb-2 text-gray-700 font-medium">
+                        Price <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">₱</span>
+                        <input type="number" id="price" name="price" 
+                               class="w-full pl-8 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all duration-300"
+                               value="<?= old('price') ?>" step="0.01" min="0" required>
+                    </div>
                 </div>
             </div>
 

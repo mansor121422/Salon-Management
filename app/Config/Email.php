@@ -6,8 +6,9 @@ use CodeIgniter\Config\BaseConfig;
 
 class Email extends BaseConfig
 {
-    public string $fromEmail  = '';
-    public string $fromName   = '';
+    // Gmail SMTP Configuration
+    public string $fromEmail  = 'benzmenguito123@gmail.com';  // Replace with your Gmail address
+    public string $fromName   = 'Salon Management System';
     public string $recipients = '';
 
     /**
@@ -18,7 +19,7 @@ class Email extends BaseConfig
     /**
      * The mail sending protocol: mail, sendmail, smtp
      */
-    public string $protocol = 'mail';
+    public string $protocol = 'smtp';
 
     /**
      * The server path to Sendmail.
@@ -26,9 +27,9 @@ class Email extends BaseConfig
     public string $mailPath = '/usr/sbin/sendmail';
 
     /**
-     * SMTP Server Hostname
+     * SMTP Server Hostname (Gmail SMTP)
      */
-    public string $SMTPHost = '';
+    public string $SMTPHost = 'smtp.gmail.com';
 
     /**
      * Which SMTP authentication method to use: login, plain
@@ -36,24 +37,25 @@ class Email extends BaseConfig
     public string $SMTPAuthMethod = 'login';
 
     /**
-     * SMTP Username
+     * SMTP Username (Your Gmail address)
      */
-    public string $SMTPUser = '';
+    public string $SMTPUser = 'benzmenguito123@gmail.com';  // Replace with your Gmail address
 
     /**
-     * SMTP Password
+     * SMTP Password (Your App Password - NOT your regular password)
+     * Note: You need to enable 2-Factor Authentication and generate an App Password
      */
-    public string $SMTPPass = '';
+    public string $SMTPPass = 'jdlf djeh pggj aavu';  // Replace with your Gmail App Password
 
     /**
-     * SMTP Port
+     * SMTP Port (587 for TLS, 465 for SSL)
      */
-    public int $SMTPPort = 25;
+    public int $SMTPPort = 587;
 
     /**
      * SMTP Timeout (in seconds)
      */
-    public int $SMTPTimeout = 5;
+    public int $SMTPTimeout = 60;
 
     /**
      * Enable persistent SMTP connections
@@ -82,7 +84,7 @@ class Email extends BaseConfig
     /**
      * Type of mail, either 'text' or 'html'
      */
-    public string $mailType = 'text';
+    public string $mailType = 'html';
 
     /**
      * Character set (utf-8, iso-8859-1, etc.)
@@ -100,12 +102,12 @@ class Email extends BaseConfig
     public int $priority = 3;
 
     /**
-     * Newline character. (Use “\r\n” to comply with RFC 822)
+     * Newline character. (Use "\r\n" to comply with RFC 822)
      */
     public string $CRLF = "\r\n";
 
     /**
-     * Newline character. (Use “\r\n” to comply with RFC 822)
+     * Newline character. (Use "\r\n" to comply with RFC 822)
      */
     public string $newline = "\r\n";
 

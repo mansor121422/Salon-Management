@@ -7,11 +7,48 @@
     <p class="text-purple-200">Manage your salon appointments efficiently</p>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<!-- Revenue Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg p-6 shadow-lg text-white hover:shadow-2xl transition-shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="text-green-100 text-sm font-medium mb-1">Today's Revenue</div>
+                <div class="text-3xl font-bold">₱<?= number_format($today_revenue, 2) ?></div>
+            </div>
+            <div class="text-5xl opacity-50">💰</div>
+        </div>
+    </div>
+    <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-6 shadow-lg text-white hover:shadow-2xl transition-shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="text-blue-100 text-sm font-medium mb-1">Weekly Revenue</div>
+                <div class="text-3xl font-bold">₱<?= number_format($weekly_revenue, 2) ?></div>
+            </div>
+            <div class="text-5xl opacity-50">📊</div>
+        </div>
+    </div>
+    <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg p-6 shadow-lg text-white hover:shadow-2xl transition-shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="text-purple-100 text-sm font-medium mb-1">Monthly Revenue</div>
+                <div class="text-3xl font-bold">₱<?= number_format($monthly_revenue, 2) ?></div>
+            </div>
+            <div class="text-5xl opacity-50">📈</div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
     <div class="bg-white rounded-lg p-6 shadow-lg text-center hover:shadow-2xl transition-shadow">
         <div class="text-5xl mb-2">📅</div>
         <div class="text-3xl font-bold text-brand-dark"><?= count($appointments) ?></div>
         <div class="text-gray-600 text-sm">Total Appointments</div>
+    </div>
+    <div class="bg-white rounded-lg p-6 shadow-lg text-center hover:shadow-2xl transition-shadow">
+        <div class="text-5xl mb-2">👥</div>
+        <div class="text-3xl font-bold text-brand-dark"><?= $total_customers ?></div>
+        <div class="text-gray-600 text-sm">Total Customers</div>
     </div>
     <div class="bg-white rounded-lg p-6 shadow-lg text-center hover:shadow-2xl transition-shadow">
         <div class="text-5xl mb-2">⏳</div>
@@ -36,6 +73,99 @@
     </div>
 </div>
 
+<!-- Recent Appointments and Top Services -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Recent Appointments -->
+    <div class="bg-white rounded-xl p-6 shadow-xl">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-brand-dark text-lg font-bold">🕐 Recent Appointments</h2>
+            <a href="<?= base_url('appointments/create') ?>" class="text-purple-600 hover:text-purple-800 text-sm font-medium">+ New</a>
+        </div>
+        
+        <?php if (empty($recent_appointments)): ?>
+            <div class="text-center py-8 text-gray-600">
+                <div class="text-4xl mb-2">📭</div>
+                <p>No recent appointments</p>
+            </div>
+        <?php else: ?>
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="p-3 text-left text-xs font-semibold text-gray-600 border-b">Customer</th>
+                            <th class="p-3 text-left text-xs font-semibold text-gray-600 border-b">Service</th>
+                            <th class="p-3 text-left text-xs font-semibold text-gray-600 border-b">Date</th>
+                            <th class="p-3 text-left text-xs font-semibold text-gray-600 border-b">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($recent_appointments as $appointment): ?>
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="p-3 border-b border-gray-100 text-sm"><?= esc($appointment['customer_name']) ?></td>
+                            <td class="p-3 border-b border-gray-100 text-sm"><?= esc($appointment['service_type']) ?></td>
+                            <td class="p-3 border-b border-gray-100 text-sm"><?= date('M d', strtotime($appointment['appointment_date'])) ?></td>
+                            <td class="p-3 border-b border-gray-100">
+                                <?php
+                                $statusClasses = [
+                                    'pending' => 'bg-yellow-100 text-yellow-800',
+                                    'confirmed' => 'bg-green-100 text-green-800',
+                                    'completed' => 'bg-blue-100 text-blue-800',
+                                    'cancelled' => 'bg-red-100 text-red-800'
+                                ];
+                                $statusClass = $statusClasses[$appointment['status']] ?? 'bg-gray-100 text-gray-800';
+                                ?>
+                                <span class="inline-block px-2 py-1 rounded-full text-xs font-semibold <?= $statusClass ?>">
+                                    <?= ucfirst($appointment['status']) ?>
+                                </span>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- Top Services -->
+    <div class="bg-white rounded-xl p-6 shadow-xl">
+        <h2 class="text-brand-dark text-lg font-bold mb-6">🏆 Top Services</h2>
+        
+        <?php if (empty($top_services)): ?>
+            <div class="text-center py-8 text-gray-600">
+                <div class="text-4xl mb-2">📊</div>
+                <p>No service data yet</p>
+            </div>
+        <?php else: ?>
+            <div class="space-y-4">
+                <?php 
+                $maxCount = !empty($top_services) ? $top_services[0]->total_count : 1;
+                foreach ($top_services as $index => $service): 
+                    $percentage = ($service->total_count / $maxCount) * 100;
+                    $colors = ['bg-purple-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-red-500'];
+                    $color = $colors[$index % count($colors)];
+                ?>
+                <div class="flex items-center gap-4">
+                    <div class="w-8 h-8 rounded-full <?= $color ?> text-white flex items-center justify-center text-sm font-bold">
+                        <?= $index + 1 ?>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-medium text-gray-800"><?= esc($service->service_type) ?></span>
+                            <span class="text-sm text-gray-600"><?= $service->total_count ?> appointments</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="<?= $color ?> h-2 rounded-full" style="width: <?= $percentage ?>%"></div>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">₱<?= number_format($service->total_revenue ?? 0, 2) ?> revenue</div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<!-- All Appointments -->
 <div class="bg-white rounded-xl p-8 shadow-xl">
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-brand-dark">📋 All Appointments</h2>
@@ -57,6 +187,7 @@
                         <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Customer</th>
                         <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Phone</th>
                         <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Service</th>
+                        <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Price</th>
                         <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Date</th>
                         <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Time</th>
                         <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Status</th>
@@ -70,6 +201,7 @@
                         <td class="p-4 border-b border-gray-200"><?= esc($appointment['customer_name']) ?></td>
                         <td class="p-4 border-b border-gray-200"><?= esc($appointment['customer_phone']) ?></td>
                         <td class="p-4 border-b border-gray-200"><?= esc($appointment['service_type']) ?></td>
+                        <td class="p-4 border-b border-gray-200">₱<?= number_format($appointment['price'] ?? 0, 2) ?></td>
                         <td class="p-4 border-b border-gray-200"><?= date('M d, Y', strtotime($appointment['appointment_date'])) ?></td>
                         <td class="p-4 border-b border-gray-200"><?= date('h:i A', strtotime($appointment['appointment_time'])) ?></td>
                         <td class="p-4 border-b border-gray-200">
