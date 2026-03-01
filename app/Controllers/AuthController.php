@@ -23,11 +23,24 @@ class AuthController extends BaseController
         
         if ($user) {
             if (password_verify($password, $user['password'])) {
+                // Store role id and role name in session when available
+                $roleId = $user['role_id'] ?? null;
+                $roleName = null;
+                if ($roleId) {
+                    $db = \Config\Database::connect();
+                    $row = $db->table('roles')->where('id', $roleId)->get()->getRow();
+                    $roleName = $row->name ?? null;
+                } else {
+                    // fallback to legacy `role` column if present
+                    $roleName = $user['role'] ?? null;
+                }
+
                 $sessionData = [
                     'user_id'   => $user['id'],
                     'username'  => $user['username'],
                     'full_name' => $user['full_name'],
-                    'role'      => $user['role'],
+                    'role_id'   => $roleId,
+                    'role'      => $roleName,
                     'logged_in' => true
                 ];
                 $session->set($sessionData);

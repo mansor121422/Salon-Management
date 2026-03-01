@@ -2,38 +2,49 @@
 
 <?= $this->section('content') ?>
 
-<div class="bg-gradient-to-r from-purple-950 via-purple-900 to-indigo-950 rounded-xl p-8 mb-8 shadow-xl">
-    <h1 class="text-white mb-2">Welcome, <?= esc(session()->get('full_name')) ?>!</h1>
-    <p class="text-purple-200">Manage your salon appointments efficiently</p>
-</div>
-
-<!-- Revenue Cards -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-    <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg p-6 shadow-lg text-white hover:shadow-2xl transition-shadow">
-        <div class="flex items-center justify-between">
-            <div>
-                <div class="text-green-100 text-sm font-medium mb-1">Today's Revenue</div>
-                <div class="text-3xl font-bold">₱<?= number_format($today_revenue, 2) ?></div>
+<div class="bg-gradient-to-r from-gray-900 via-indigo-900 to-indigo-700 rounded-xl p-8 mb-8 shadow-2xl border-2 border-indigo-600">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-white mb-2 text-2xl">Admin Console — <?= esc(session()->get('full_name')) ?></h1>
+            <p class="text-indigo-200">Overview and management</p>
+        </div>
+        <div class="text-right">
+            <div class="text-sm text-indigo-300">System Status</div>
+            <div class="mt-1 inline-flex items-center gap-2">
+                <span class="inline-block w-3 h-3 rounded-full bg-green-400"></span>
+                <span class="text-sm text-white">All services running</span>
             </div>
-            <div class="text-5xl opacity-50">💰</div>
         </div>
     </div>
-    <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-6 shadow-lg text-white hover:shadow-2xl transition-shadow">
+</div>
+
+<!-- Revenue Cards (Admin emphasis) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg p-6 shadow-lg text-gray-900 hover:shadow-2xl transition-shadow">
         <div class="flex items-center justify-between">
             <div>
-                <div class="text-blue-100 text-sm font-medium mb-1">Weekly Revenue</div>
+                <div class="text-yellow-900 text-sm font-medium mb-1">Today's Revenue</div>
+                <div class="text-3xl font-bold">₱<?= number_format($today_revenue, 2) ?></div>
+            </div>
+            <div class="text-5xl opacity-60">💸</div>
+        </div>
+    </div>
+    <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg p-6 shadow-lg text-white hover:shadow-2xl transition-shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="text-indigo-100 text-sm font-medium mb-1">Weekly Revenue</div>
                 <div class="text-3xl font-bold">₱<?= number_format($weekly_revenue, 2) ?></div>
             </div>
             <div class="text-5xl opacity-50">📊</div>
         </div>
     </div>
-    <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg p-6 shadow-lg text-white hover:shadow-2xl transition-shadow">
+    <div class="bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg p-6 shadow-lg text-white hover:shadow-2xl transition-shadow">
         <div class="flex items-center justify-between">
             <div>
                 <div class="text-purple-100 text-sm font-medium mb-1">Monthly Revenue</div>
                 <div class="text-3xl font-bold">₱<?= number_format($monthly_revenue, 2) ?></div>
             </div>
-            <div class="text-5xl opacity-50">📈</div>
+            <div class="text-5xl opacity-60">📈</div>
         </div>
     </div>
 </div>

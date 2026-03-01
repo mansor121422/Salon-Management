@@ -4,7 +4,7 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class CreateUsersTable extends Migration
+class CreateRolesTable extends Migration
 {
     public function up()
     {
@@ -15,24 +15,15 @@ class CreateUsersTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
-            'username' => [
+            'name' => [
                 'type'       => 'VARCHAR',
                 'constraint' => '100',
                 'unique'     => true,
             ],
-            'password' => [
-                'type'       => 'VARCHAR',
+            'description' => [
+                'type' => 'VARCHAR',
                 'constraint' => '255',
-            ],
-            'full_name' => [
-                'type'       => 'VARCHAR',
-                'constraint' => '255',
-            ],
-            // Use VARCHAR for role (allows flexible, normalized values)
-            'role' => [
-                'type'       => 'VARCHAR',
-                'constraint' => '50',
-                'default'    => 'receptionist',
+                'null' => true,
             ],
             'created_at' => [
                 'type' => 'DATETIME',
@@ -43,12 +34,28 @@ class CreateUsersTable extends Migration
                 'null' => true,
             ],
         ]);
+
         $this->forge->addKey('id', true);
-        $this->forge->createTable('users');
+        $this->forge->createTable('roles');
+
+        // Seed default roles to ensure migration mapping can use them
+        $db = \Config\Database::connect();
+        $roles = ['receptionist', 'admin', 'customer'];
+        foreach ($roles as $r) {
+            $exists = $db->table('roles')->where('name', $r)->countAllResults();
+            if ($exists == 0) {
+                $db->table('roles')->insert([
+                    'name' => $r,
+                    'description' => ucfirst($r) . ' role',
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ]);
+            }
+        }
     }
 
     public function down()
     {
-        $this->forge->dropTable('users');
+        $this->forge->dropTable('roles');
     }
 }

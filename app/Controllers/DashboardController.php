@@ -15,7 +15,26 @@ class DashboardController extends BaseController
         $appointmentModel = new AppointmentModel();
         $db = \Config\Database::connect();
 
-        // Get all appointments (existing functionality)
+        $role = strtolower((string) session()->get('role'));
+
+        // Customer: show only their appointments
+        if ($role === 'customer') {
+            $fullName = session()->get('full_name');
+            try {
+                $data = [];
+                $data['appointments'] = $appointmentModel->where('customer_name', $fullName)
+                                                         ->orderBy('appointment_date', 'DESC')
+                                                         ->orderBy('appointment_time', 'DESC')
+                                                         ->findAll();
+            } catch (\Exception $e) {
+                log_message('error', 'Customer dashboard appointments query error: ' . $e->getMessage());
+                $data['appointments'] = [];
+            }
+
+            return view('dashboard/customer', $data);
+        }
+
+        // Admin & Receptionist: get all appointments
         $data['appointments'] = $appointmentModel->orderBy('appointment_date', 'ASC')
                                                   ->orderBy('appointment_time', 'ASC')
                                                   ->findAll();
