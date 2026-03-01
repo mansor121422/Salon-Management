@@ -107,7 +107,7 @@
             <p>Receptionist Dashboard Access</p>
         </div>
 
-        <form action="/login" method="post">
+        <form action="<?= base_url('login') ?>" method="post">
             <?= csrf_field() ?>
             
             <div class="form-group">

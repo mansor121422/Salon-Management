@@ -230,7 +230,7 @@
 <div class="appointments-section">
     <div class="section-header">
         <h2>📋 All Appointments</h2>
-        <a href="/appointments/create" class="btn-new">+ New Appointment</a>
+        <a href="<?= base_url('appointments/create') ?>" class="btn-new">+ New Appointment</a>
     </div>
 
     <?php if (empty($appointments)): ?>
@@ -270,18 +270,18 @@
                     <td>
                         <div class="action-buttons">
                             <?php if ($appointment['status'] === 'pending'): ?>
-                                <form action="/appointments/update-status/<?= $appointment['id'] ?>" method="post" style="display: inline;">
+                                <form action="<?= base_url('appointments/update-status/' . $appointment['id']) ?>" method="post" style="display: inline;">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="status" value="confirmed">
                                     <button type="submit" class="btn-action btn-confirm">Confirm</button>
                                 </form>
-                                <form action="/appointments/update-status/<?= $appointment['id'] ?>" method="post" style="display: inline;">
+                                <form action="<?= base_url('appointments/update-status/' . $appointment['id']) ?>" method="post" style="display: inline;">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="status" value="cancelled">
                                     <button type="submit" class="btn-action btn-cancel">Cancel</button>
                                 </form>
                             <?php elseif ($appointment['status'] === 'confirmed'): ?>
-                                <form action="/appointments/update-status/<?= $appointment['id'] ?>" method="post" style="display: inline;">
+                                <form action="<?= base_url('appointments/update-status/' . $appointment['id']) ?>" method="post" style="display: inline;">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="status" value="completed">
                                     <button type="submit" class="btn-action btn-confirm">Complete</button>

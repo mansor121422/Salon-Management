@@ -9,16 +9,16 @@ class AppointmentController extends BaseController
     public function create()
     {
         if (!session()->get('logged_in')) {
-            return redirect()->to('/login');
+            return redirect()->to(base_url('login'));
         }
-        
+
         return view('appointments/create');
     }
 
     public function store()
     {
         if (!session()->get('logged_in')) {
-            return redirect()->to('/login');
+            return redirect()->to(base_url('login'));
         }
 
         $model = new AppointmentModel();
@@ -36,7 +36,7 @@ class AppointmentController extends BaseController
 
         if ($model->insert($data)) {
             session()->setFlashdata('success', 'Appointment created successfully!');
-            return redirect()->to('/appointments/confirmation/' . $model->getInsertID());
+            return redirect()->to(base_url('appointments/confirmation/' . $model->getInsertID()));
         } else {
             session()->setFlashdata('error', 'Failed to create appointment. Please check the form.');
             return redirect()->back()->withInput();
@@ -46,23 +46,23 @@ class AppointmentController extends BaseController
     public function confirmation($id)
     {
         if (!session()->get('logged_in')) {
-            return redirect()->to('/login');
+            return redirect()->to(base_url('login'));
         }
 
         $model = new AppointmentModel();
         $data['appointment'] = $model->find($id);
-        
+
         if (!$data['appointment']) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
-        
+
         return view('appointments/confirmation', $data);
     }
 
     public function updateStatus($id)
     {
         if (!session()->get('logged_in')) {
-            return redirect()->to('/login');
+            return redirect()->to(base_url('login'));
         }
 
         $model = new AppointmentModel();
@@ -74,6 +74,6 @@ class AppointmentController extends BaseController
             session()->setFlashdata('error', 'Failed to update status');
         }
         
-        return redirect()->to('/dashboard');
+        return redirect()->to(base_url('dashboard'));
     }
 }

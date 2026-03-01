@@ -31,14 +31,14 @@ class AuthController extends BaseController
                     'logged_in' => true
                 ];
                 $session->set($sessionData);
-                return redirect()->to('/dashboard');
+                return redirect()->to(base_url('dashboard'));
             } else {
                 $session->setFlashdata('error', 'Invalid password');
-                return redirect()->to('/login');
+                return redirect()->to(base_url('login'));
             }
         } else {
             $session->setFlashdata('error', 'Username not found');
-            return redirect()->to('/login');
+            return redirect()->to(base_url('login'));
         }
     }
 
@@ -46,6 +46,6 @@ class AuthController extends BaseController
     {
         $session = session();
         $session->destroy();
-        return redirect()->to('/login');
+        return redirect()->to(base_url('login'));
     }
 }

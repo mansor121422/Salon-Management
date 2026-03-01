@@ -195,8 +195,8 @@
         </div>
 
         <div class="action-buttons">
-            <a href="/dashboard" class="btn btn-primary">View All Appointments</a>
-            <a href="/appointments/create" class="btn btn-success">Create Another</a>
+            <a href="<?= base_url('dashboard') ?>" class="btn btn-primary">View All Appointments</a>
+            <a href="<?= base_url('appointments/create') ?>" class="btn btn-success">Create Another</a>
         </div>
     </div>
 </div>

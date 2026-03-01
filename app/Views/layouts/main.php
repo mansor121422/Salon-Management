@@ -110,10 +110,10 @@
     <nav class="navbar">
         <div class="navbar-brand">💇 Salon Management</div>
         <div class="navbar-menu">
-            <a href="/dashboard">Dashboard</a>
-            <a href="/appointments/create">New Appointment</a>
+            <a href="<?= base_url('dashboard') ?>">Dashboard</a>
+            <a href="<?= base_url('appointments/create') ?>">New Appointment</a>
             <span class="navbar-user">👤 <?= esc(session()->get('full_name')) ?></span>
-            <a href="/logout" style="background: #dc3545; color: white;">Logout</a>
+            <a href="<?= base_url('logout') ?>" style="background: #dc3545; color: white;">Logout</a>
         </div>
     </nav>
     <?php endif; ?>

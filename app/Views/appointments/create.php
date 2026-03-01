@@ -126,7 +126,7 @@
             <p>Fill in the customer details and schedule information</p>
         </div>
 
-        <form action="/appointments/store" method="post">
+        <form action="<?= base_url('appointments/store') ?>" method="post">
             <?= csrf_field() ?>
 
             <div class="form-row">
@@ -185,7 +185,7 @@
             </div>
 
             <div class="btn-group">
-                <button type="button" class="btn btn-secondary" onclick="window.location.href='/dashboard'">Cancel</button>
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='<?= base_url('dashboard') ?>'">Cancel</button>
                 <button type="submit" class="btn btn-primary">Create Appointment</button>
             </div>
         </form>
