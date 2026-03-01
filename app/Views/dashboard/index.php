@@ -2,9 +2,9 @@
 
 <?= $this->section('content') ?>
 
-<div class="bg-white rounded-xl p-8 mb-8 shadow-xl">
-    <h1 class="text-brand-dark mb-2">Welcome, <?= esc(session()->get('full_name')) ?>!</h1>
-    <p class="text-gray-600">Manage your salon appointments efficiently</p>
+<div class="bg-gradient-to-r from-purple-950 via-purple-900 to-indigo-950 rounded-xl p-8 mb-8 shadow-xl">
+    <h1 class="text-white mb-2">Welcome, <?= esc(session()->get('full_name')) ?>!</h1>
+    <p class="text-purple-200">Manage your salon appointments efficiently</p>
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -38,7 +38,7 @@
 
 <div class="bg-white rounded-xl p-8 shadow-xl">
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-gray-800">📋 All Appointments</h2>
+        <h2 class="text-brand-dark">📋 All Appointments</h2>
         <a href="<?= base_url('appointments/create') ?>" class="bg-gradient-to-r from-brand-purple to-brand-dark text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">+ New Appointment</a>
     </div>
 
