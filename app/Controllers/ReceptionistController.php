@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\AppointmentModel;
+use CodeIgniter\Email\Email;
 
 class ReceptionistController extends BaseController
 {
@@ -198,7 +199,23 @@ class ReceptionistController extends BaseController
         $model = new AppointmentModel();
         $status = $this->request->getPost('status');
         
+        // Get the appointment details before updating
+        $appointment = $model->find($id);
+        
+        if (!$appointment) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Appointment not found'
+            ]);
+        }
+        
+        // Update the appointment status
         if ($model->update($id, ['status' => $status])) {
+            // Send email notification if appointment is confirmed and customer has email
+            if ($status === 'confirmed' && !empty($appointment['customer_email'])) {
+                $this->sendAppointmentConfirmationEmail($appointment);
+            }
+            
             // Return JSON response for AJAX
             return $this->response->setJSON([
                 'success' => true,
@@ -237,6 +254,40 @@ class ReceptionistController extends BaseController
             'success' => true,
             'appointments' => $appointments
         ]);
+    }
+
+    /**
+     * Send appointment confirmation email to customer
+     */
+    private function sendAppointmentConfirmationEmail($appointment)
+    {
+        $email = \Config\Services::email();
+        
+        // Configure email settings
+        $email->setFrom('benzmenguito123@gmail.com', 'Chanell Salon');
+        $email->setTo($appointment['customer_email']);
+        $email->setSubject('Your Appointment Has Been Confirmed - Chanell Salon');
+        
+        // Prepare email data
+        $data = [
+            'customer_name' => $appointment['customer_name'],
+            'appointment_id' => $appointment['id'],
+            'service_type' => $appointment['service_type'],
+            'appointment_date' => $appointment['appointment_date'],
+            'appointment_time' => $appointment['appointment_time'],
+            'price' => $appointment['price'],
+            'notes' => $appointment['notes'] ?? ''
+        ];
+        
+        $message = view('emails/appointment_confirmation', $data);
+        $email->setMessage($message);
+        
+        if ($email->send()) {
+            log_message('info', 'Appointment confirmation email sent to: ' . $appointment['customer_email']);
+        } else {
+            log_message('error', 'Failed to send appointment confirmation email to: ' . $appointment['customer_email']);
+            log_message('error', $email->printDebugger(['headers']));
+        }
     }
 
     /**
