@@ -22,7 +22,17 @@
 </head>
 <body class="bg-white min-h-screen flex flex-col font-sans antialiased">
     <?php if (session()->get('logged_in')): ?>
-        <?= view('header/header') ?>
+    <nav class="bg-brand-dark shadow-lg px-8 py-4">
+                <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold tracking-tight uppercase text-white">Salon</h1>
+            <div class="flex items-center space-x-6">
+                <a href="<?= base_url('receptionist') ?>" class="text-white hover:text-brand-purple transition-colors">Dashboard</a>
+                <a href="<?= base_url('receptionist?show_modal=true') ?>" class="text-white hover:text-brand-purple transition-colors">New Appointment</a>
+                <span class="text-white text-sm">👤 <?= esc(session()->get('full_name')) ?></span>
+                <a href="<?= base_url('logout') ?>" class="bg-brand-purple hover:bg-brand-dark text-white px-4 py-2 rounded-lg transition-colors">Logout</a>
+            </div>
+        </div>
+    </nav>
     <?php endif; ?>
 
     <div class="flex-1 max-w-7xl mx-auto w-full px-4 py-8">

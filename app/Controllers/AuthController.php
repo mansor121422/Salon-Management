@@ -44,7 +44,13 @@ class AuthController extends BaseController
                     'logged_in' => true
                 ];
                 $session->set($sessionData);
-                return redirect()->to(base_url('dashboard'));
+                
+                // Redirect based on user role
+                if (strtolower($roleName) === 'receptionist') {
+                    return redirect()->to(base_url('receptionist'));
+                } else {
+                    return redirect()->to(base_url('dashboard'));
+                }
             } else {
                 $session->setFlashdata('error', 'Invalid password');
                 return redirect()->to(base_url('login'));

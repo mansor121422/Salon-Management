@@ -20,7 +20,8 @@ class AppointmentModel extends Model
         'appointment_date',
         'appointment_time',
         'status',
-        'notes'
+        'notes',
+        'price'
     ];
 
     protected bool $allowEmptyInserts = false;

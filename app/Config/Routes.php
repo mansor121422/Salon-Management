@@ -12,14 +12,23 @@ $routes->get('/login', 'AuthController::login');
 $routes->post('/login', 'AuthController::authenticate');
 $routes->get('/logout', 'AuthController::logout');
 
-// Dashboard
-$routes->get('/dashboard', 'DashboardController::index');
+// Receptionist Dashboard (Unified)
+$routes->get('/receptionist', 'ReceptionistController::index');
+$routes->get('/receptionist/dashboard', 'ReceptionistController::index');
 
-// Appointments
-$routes->get('/appointments/create', 'AppointmentController::create');
-$routes->post('/appointments/store', 'AppointmentController::store');
-$routes->get('/appointments/confirmation/(:num)', 'AppointmentController::confirmation/$1');
-$routes->post('/appointments/update-status/(:num)', 'AppointmentController::updateStatus/$1');
+// Receptionist Appointments (Unified)
+$routes->get('/receptionist/appointments/create', 'ReceptionistController::create');
+$routes->post('/receptionist/appointments/store', 'ReceptionistController::store');
+$routes->get('/receptionist/appointments/confirmation/(:num)', 'ReceptionistController::confirmation/$1');
+$routes->post('/receptionist/appointments/update-status/(:num)', 'ReceptionistController::updateStatus/$1');
+$routes->get('/receptionist/appointments/all', 'ReceptionistController::getAllAppointments');
+$routes->get('/receptionist/statistics', 'ReceptionistController::getStatistics');
+
+// Legacy routes for backward compatibility (redirect to receptionist routes)
+$routes->get('/appointments/create', 'ReceptionistController::create');
+$routes->post('/appointments/store', 'ReceptionistController::store');
+$routes->get('/appointments/confirmation/(:num)', 'ReceptionistController::confirmation/$1');
+$routes->post('/appointments/update-status/(:num)', 'ReceptionistController::updateStatus/$1');
 
 // Staff Management
 $routes->get('/staff', 'Staff::index');

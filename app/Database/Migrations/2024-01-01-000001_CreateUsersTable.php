@@ -28,10 +28,9 @@ class CreateUsersTable extends Migration
                 'type'       => 'VARCHAR',
                 'constraint' => '255',
             ],
-            // Use VARCHAR for role (allows flexible, normalized values)
             'role' => [
-                'type'       => 'VARCHAR',
-                'constraint' => '50',
+                'type'       => 'ENUM',
+                'constraint' => ['receptionist', 'admin'],
                 'default'    => 'receptionist',
             ],
             'created_at' => [
