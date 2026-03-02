@@ -108,24 +108,6 @@
                     </select>
                 </div>
 
-                <!-- Assign Staff Dropdown -->
-                <div class="mb-6">
-                    <label for="staff_id" class="block mb-2 text-gray-700 font-medium">
-                        Assign Staff (Optional)
-                    </label>
-                    <select id="staff_id" name="staff_id" 
-                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all duration-300 cursor-pointer">
-                        <option value="">-- Select Staff --</option>
-                        <?php if (!empty($staff)): ?>
-                            <?php foreach ($staff as $member): ?>
-                                <option value="<?= esc($member['id']) ?>" <?= old('staff_id') == $member['id'] ? 'selected' : '' ?>>
-                                    <?= esc($member['name']) ?> (<?= esc($member['role']) ?>)
-                                </option>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </select>
-                    <p class="mt-1 text-sm text-gray-500">Leave empty if no specific staff member is assigned</p>
-                </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div>
@@ -581,8 +563,18 @@ document.addEventListener('DOMContentLoaded', function() {
                         }, 2000); // Wait 2 seconds before refreshing
                     }
                 } else {
-                    // Show error message
-                    showFlashMessage(data.message || 'Failed to create appointment.', 'error');
+                    
+                    if (data.errors) {
+                        // Display validation errors
+                        let errorMessage = '';
+                        for (const [field, error] of Object.entries(data.errors)) {
+                            errorMessage += error + '\n';
+                        }
+                        showFlashMessage(errorMessage, 'error');
+                    } else {
+                        // Show general error message
+                        showFlashMessage(data.message || 'Failed to create appointment.', 'error');
+                    }
                 }
             })
             .catch(error => {
