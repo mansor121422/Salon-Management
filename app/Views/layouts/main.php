@@ -33,7 +33,7 @@
                     <a href="<?= base_url('admin/users/all') ?>" class="text-white hover:text-brand-purple transition-colors">Manage Users</a>
                 <?php elseif ($role === 'receptionist'): ?>
                     <a href="<?= base_url('receptionist') ?>" class="text-white hover:text-brand-purple transition-colors">Dashboard</a>
-                    <a href="<?= base_url('receptionist?show_modal=true') ?>" class="text-white hover:text-brand-purple transition-colors">New Appointment</a>
+                    <a href="<?= base_url('receptionist?tab=appointments') ?>" class="text-white hover:text-brand-purple transition-colors">Appointments</a>
                 <?php else: ?>
                     <a href="<?= base_url('dashboard') ?>" class="text-white hover:text-brand-purple transition-colors">Dashboard</a>
                 <?php endif; ?>

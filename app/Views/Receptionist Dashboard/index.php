@@ -9,7 +9,7 @@
 </div>
 
     <!-- Overview Tab -->
-    <div id="overview-content" class="tab-content active">
+    <div id="overview-content" class="tab-content hidden">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div class="bg-white rounded-lg p-6 shadow-lg text-center hover:shadow-2xl transition-shadow">
                 <div class="text-5xl mb-2">📅</div>
@@ -38,6 +38,7 @@
                 <div class="text-gray-600 text-sm">Completed</div>
             </div>
         </div>
+    </div>
         
     <!-- Create Appointment Modal -->
     <div id="create-appointment-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
@@ -215,7 +216,7 @@
     </div>
 
     <!-- All Appointments Content -->
-    <div id="all-content">
+    <div id="all-content" class="tab-content active">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-brand-dark">📋 All Appointments</h2>
             <button onclick="openCreateModal()" class="bg-gradient-to-r from-brand-purple to-brand-dark text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">+ New Appointment</button>
@@ -295,7 +296,6 @@
             </div>
         <?php endif; ?>
     </div>
-</div>
 
 <!-- Success Modal -->
 <div id="success-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
@@ -587,8 +587,36 @@ function refreshDashboard() {
 
 // Event listeners
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if modal should be opened on page load (only if coming from navigation, not refresh)
+    // Check URL parameters to determine which tab to show
     const urlParams = new URLSearchParams(window.location.search);
+    const overviewContent = document.getElementById('overview-content');
+    const allContent = document.getElementById('all-content');
+    
+    // Default: show overview tab (dashboard)
+    if (overviewContent) {
+        overviewContent.classList.remove('hidden');
+        overviewContent.classList.add('active');
+    }
+    
+    if (allContent) {
+        allContent.classList.add('hidden');
+        allContent.classList.remove('active');
+    }
+    
+    // If appointments parameter is present, show appointments tab
+    if (urlParams.get('tab') === 'appointments') {
+        if (overviewContent) {
+            overviewContent.classList.add('hidden');
+            overviewContent.classList.remove('active');
+        }
+        
+        if (allContent) {
+            allContent.classList.remove('hidden');
+            allContent.classList.add('active');
+        }
+    }
+    
+    // Check if modal should be opened on page load (only if coming from navigation, not refresh)
     if (urlParams.get('show_modal') === 'true') {
         openCreateModal();
         // Remove the show_modal parameter from URL without reloading the page
