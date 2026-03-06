@@ -166,6 +166,54 @@
         </div>
     </div>
 
+    <!-- Edit Appointment Modal -->
+    <div id="edit-appointment-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-8 shadow-xl text-center max-w-2xl w-full mx-4 animate-in scale-95 duration-300">
+            <div class="text-center mb-6">
+                <h2 class="text-purple-900 text-2xl font-bold mb-2">📅 Reschedule Appointment</h2>
+                <p class="text-gray-600">Update the appointment date and time</p>
+            </div>
+
+            <form id="edit-appointment-form" action="" method="post" class="text-left">
+                <?= csrf_field() ?>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="edit_appointment_date" class="block mb-2 text-gray-700 font-medium">
+                            New Date <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" id="edit_appointment_date" name="appointment_date" 
+                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all duration-300"
+                               required>
+                    </div>
+
+                    <div>
+                        <label for="edit_appointment_time" class="block mb-2 text-gray-700 font-medium">
+                            New Time <span class="text-red-500">*</span>
+                        </label>
+                        <input type="time" id="edit_appointment_time" name="appointment_time" 
+                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all duration-300"
+                               required>
+                    </div>
+                </div>
+
+                <div id="edit-error-message" class="mb-4 text-red-500 text-sm hidden"></div>
+
+                <div class="flex gap-4">
+                    <button type="button" 
+                            class="flex-1 bg-gray-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-gray-700 transition-colors duration-300"
+                            onclick="closeEditModal()">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="flex-1 bg-gradient-to-r from-purple-800 to-purple-900 text-white py-3 px-6 rounded-lg font-semibold hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300">
+                        Reschedule
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- All Appointments Content -->
     <div id="all-content">
         <div class="flex justify-between items-center mb-6">
@@ -223,18 +271,19 @@
                                         <form action="<?= base_url('receptionist/appointments/update-status/' . $appointment['id']) ?>" method="post" class="inline update-status-form">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="status" value="confirmed">
-                                            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm font-medium transition-colors">Confirm</button>
+                                            <button type="submit" class="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-3 py-1 rounded text-sm font-medium transition-colors">Confirm</button>
                                         </form>
                                         <form action="<?= base_url('receptionist/appointments/update-status/' . $appointment['id']) ?>" method="post" class="inline update-status-form">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="status" value="cancelled">
-                                            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm font-medium transition-colors">Cancel</button>
+                                            <button type="submit" class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-3 py-1 rounded text-sm font-medium transition-colors">Cancel</button>
                                         </form>
                                     <?php elseif ($appointment['status'] === 'confirmed'): ?>
+                                        <button type="button" onclick="openEditModal(<?= $appointment['id'] ?>)" class="bg-gradient-to-r from-purple-800 to-purple-900 hover:from-purple-900 hover:to-indigo-950 text-white px-3 py-1 rounded text-sm font-medium transition-colors">Edit</button>
                                         <form action="<?= base_url('receptionist/appointments/update-status/' . $appointment['id']) ?>" method="post" class="inline update-status-form">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="status" value="completed">
-                                            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm font-medium transition-colors">Complete</button>
+                                            <button type="submit" class="bg-gradient-to-r from-purple-800 to-purple-900 hover:from-purple-900 hover:to-indigo-950 text-white px-3 py-1 rounded text-sm font-medium transition-colors">Complete</button>
                                         </form>
                                     <?php endif; ?>
                                 </div>
@@ -339,6 +388,42 @@ function closeCreateModal() {
         el.classList.remove('border-red-500');
         el.classList.add('border-gray-200', 'focus:border-indigo-500');
     });
+}
+
+function openEditModal(appointmentId) {
+    fetch(`<?= base_url('receptionist/appointments/edit/') ?>${appointmentId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Populate the edit form
+                document.getElementById('edit_appointment_date').value = data.appointment.appointment_date;
+                document.getElementById('edit_appointment_time').value = data.appointment.appointment_time;
+                
+                // Set the form action
+                const form = document.getElementById('edit-appointment-form');
+                form.action = `<?= base_url('receptionist/appointments/update/') ?>${appointmentId}`;
+                
+                // Show the edit modal
+                document.getElementById('edit-appointment-modal').classList.remove('hidden');
+                
+                // Clear any previous error messages
+                document.getElementById('edit-error-message').classList.add('hidden');
+                document.getElementById('edit-error-message').textContent = '';
+            } else {
+                showFlashMessage(data.message || 'Failed to load appointment data.', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showFlashMessage('An error occurred while loading appointment data.', 'error');
+        });
+}
+
+function closeEditModal() {
+    document.getElementById('edit-appointment-modal').classList.add('hidden');
+    document.getElementById('edit-appointment-form').reset();
+    document.getElementById('edit-error-message').classList.add('hidden');
+    document.getElementById('edit-error-message').textContent = '';
 }
 
 // Form validation functions (same as in create.php)
@@ -636,6 +721,62 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
+
+    const editForm = document.getElementById('edit-appointment-form');
+    if (editForm) {
+        editForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const appointmentId = this.action.split('/').pop();
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const row = document.querySelector(`tr:has(button[onclick*="openEditModal(${appointmentId})"])`);
+                    if (row) {
+                        const dateCell = row.querySelector('td:nth-child(5)');
+                        const timeCell = row.querySelector('td:nth-child(6)');
+                        
+                        const newDate = new Date(data.appointment.appointment_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                        const newTime = data.appointment.appointment_time;
+                        
+                        dateCell.textContent = newDate;
+                        timeCell.textContent = newTime;
+                    }
+                    closeEditModal();
+                    showFlashMessage('Appointment rescheduled successfully!', 'success');
+                    
+                    // Refresh the dashboard to show updated appointment list
+                    if (data.redirect_url) {
+                        setTimeout(() => {
+                            window.location.href = data.redirect_url;
+                        }, 2000); // Wait 2 seconds before refreshing
+                    }
+                } else {
+                    if (data.errors) {
+                        let errorMessage = '';
+                        for (const [field, error] of Object.entries(data.errors)) {
+                            errorMessage += error + '\n';
+                        }
+                        document.getElementById('edit-error-message').textContent = errorMessage;
+                        document.getElementById('edit-error-message').classList.remove('hidden');
+                    } else {
+                        // Show general error message
+                        showFlashMessage(data.message || 'Failed to reschedule appointment.', 'error');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showFlashMessage('An error occurred while rescheduling the appointment.', 'error');
+            });
+        });
+    }
 });
 
 // Flash message function

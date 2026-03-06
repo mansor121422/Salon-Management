@@ -21,6 +21,8 @@ $routes->get('/receptionist/appointments/create', 'ReceptionistController::creat
 $routes->post('/receptionist/appointments/store', 'ReceptionistController::store');
 $routes->get('/receptionist/appointments/confirmation/(:num)', 'ReceptionistController::confirmation/$1');
 $routes->post('/receptionist/appointments/update-status/(:num)', 'ReceptionistController::updateStatus/$1');
+$routes->get('/receptionist/appointments/edit/(:num)', 'ReceptionistController::edit/$1');
+$routes->post('/receptionist/appointments/update/(:num)', 'ReceptionistController::update/$1');
 $routes->get('/receptionist/appointments/all', 'ReceptionistController::getAllAppointments');
 
 // Legacy routes for backward compatibility (redirect to receptionist routes)

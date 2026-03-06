@@ -231,6 +231,130 @@ class ReceptionistController extends BaseController
     }
 
     /**
+     * Show edit appointment form (schedule only)
+     */
+    public function edit($id)
+    {
+        if (!session()->get('logged_in')) {
+            return redirect()->to(base_url('login'));
+        }
+
+        // Check if user has receptionist role
+        $role = strtolower((string) session()->get('role'));
+        if ($role !== 'receptionist') {
+            return redirect()->to(base_url('dashboard'));
+        }
+
+        $model = new AppointmentModel();
+        $appointment = $model->find($id);
+        
+        if (!$appointment) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Appointment not found'
+            ]);
+        }
+
+        // Only allow editing if appointment is confirmed
+        if ($appointment['status'] !== 'confirmed') {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Only confirmed appointments can be rescheduled'
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'appointment' => $appointment
+        ]);
+    }
+
+    /**
+     * Update appointment schedule (date and time only)
+     */
+    public function update($id)
+    {
+        if (!session()->get('logged_in')) {
+            return redirect()->to(base_url('login'));
+        }
+
+        // Check if user has receptionist role
+        $role = strtolower((string) session()->get('role'));
+        if ($role !== 'receptionist') {
+            return redirect()->to(base_url('dashboard'));
+        }
+
+        $model = new AppointmentModel();
+        
+        // Get the appointment to check current data and status
+        $currentAppointment = $model->find($id);
+        if (!$currentAppointment) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Appointment not found'
+            ]);
+        }
+
+        // Only allow editing if appointment is confirmed
+        if ($currentAppointment['status'] !== 'confirmed') {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Only confirmed appointments can be rescheduled'
+            ]);
+        }
+        
+        // Get form data (only date and time)
+        $data = [
+            'appointment_date' => $this->request->getPost('appointment_date'),
+            'appointment_time' => $this->request->getPost('appointment_time'),
+        ];
+        
+        // Validate required fields
+        if (empty($data['appointment_date']) || empty($data['appointment_time'])) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Date and time are required',
+                'errors' => ['appointment_date' => 'Date and time are required']
+            ]);
+        }
+        
+        // Check for duplicate appointment time (excluding current appointment)
+        $existingAppointment = $model->where([
+            'appointment_date' => $data['appointment_date'],
+            'appointment_time' => $data['appointment_time'],
+            'id !='           => $id
+        ])->first();
+
+        if ($existingAppointment) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'This time slot is already booked for the selected date.',
+                'errors' => ['appointment_time' => 'This time slot is already booked for the selected date.']
+            ]);
+        }
+
+        // If validation passes, update the appointment
+        if ($model->update($id, $data)) {
+            session()->setFlashdata('success', 'Appointment rescheduled successfully!');
+            
+            // Return JSON response for AJAX
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Appointment rescheduled successfully!',
+                'redirect_url' => base_url('receptionist'),
+                'appointment' => array_merge(['id' => $id], $data)
+            ]);
+        } else {
+            // Return JSON response for AJAX
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Failed to reschedule appointment. Please try again.',
+                'errors' => $model->errors()
+            ]);
+        }
+    }
+
+    /**
      * Get all appointments (for the "All Appointments" tab)
      */
     public function getAllAppointments()
