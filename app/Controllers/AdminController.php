@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Models\UserModel;
-use App\Models\AppointmentModel;
 
 class AdminController extends BaseController
 {
@@ -19,38 +18,18 @@ class AdminController extends BaseController
         }
 
         $userModel = new UserModel();
-        $appointmentModel = new AppointmentModel();
-        $db = \Config\Database::connect();
 
         // Get all users
         $data['users'] = $userModel->findAll();
 
-        // Get all appointments
-        $data['appointments'] = $appointmentModel->orderBy('created_at', 'DESC')->findAll();
+        // Get user activity data (users with their last login info)
+        $data['user_activity'] = $this->getUserActivity();
 
         // Get statistics
         try {
             $data['total_users'] = $userModel->countAll();
         } catch (\Exception $e) {
             $data['total_users'] = 0;
-        }
-
-        try {
-            $data['total_appointments'] = $appointmentModel->countAll();
-        } catch (\Exception $e) {
-            $data['total_appointments'] = 0;
-        }
-
-        try {
-            $data['pending_appointments'] = $appointmentModel->where('status', 'pending')->countAllResults();
-        } catch (\Exception $e) {
-            $data['pending_appointments'] = 0;
-        }
-
-        try {
-            $data['confirmed_appointments'] = $appointmentModel->where('status', 'confirmed')->countAllResults();
-        } catch (\Exception $e) {
-            $data['confirmed_appointments'] = 0;
         }
 
         return view('Admin Dashboard/index', $data);
@@ -71,38 +50,18 @@ class AdminController extends BaseController
         }
 
         $userModel = new UserModel();
-        $appointmentModel = new AppointmentModel();
-        $db = \Config\Database::connect();
 
         // Get all users
         $data['users'] = $userModel->findAll();
 
-        // Get all appointments
-        $data['appointments'] = $appointmentModel->orderBy('created_at', 'DESC')->findAll();
+        // Get user activity data (users with their last login info)
+        $data['user_activity'] = $this->getUserActivity();
 
         // Get statistics
         try {
             $data['total_users'] = $userModel->countAll();
         } catch (\Exception $e) {
             $data['total_users'] = 0;
-        }
-
-        try {
-            $data['total_appointments'] = $appointmentModel->countAll();
-        } catch (\Exception $e) {
-            $data['total_appointments'] = 0;
-        }
-
-        try {
-            $data['pending_appointments'] = $appointmentModel->where('status', 'pending')->countAllResults();
-        } catch (\Exception $e) {
-            $data['pending_appointments'] = 0;
-        }
-
-        try {
-            $data['confirmed_appointments'] = $appointmentModel->where('status', 'confirmed')->countAllResults();
-        } catch (\Exception $e) {
-            $data['confirmed_appointments'] = 0;
         }
 
         return view('Admin Dashboard/index', $data);
@@ -261,5 +220,18 @@ class AdminController extends BaseController
             'success' => true,
             'users' => $users
         ]);
+    }
+
+    private function getUserActivity()
+    {
+        $userModel = new UserModel();
+        
+        $users = $userModel->findAll();
+        
+        foreach ($users as &$user) {
+            $user['last_login'] = $user['created_at'];
+        }
+        
+        return $users;
     }
 }

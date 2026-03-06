@@ -8,144 +8,190 @@
     <p class="text-purple-200">Manage your salon system efficiently</p>
 </div>
 
-<!-- Overview Stats -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <div class="bg-white rounded-lg p-6 shadow-lg text-center hover:shadow-2xl transition-shadow">
-        <div class="text-5xl mb-2">👥</div>
-        <div class="text-3xl font-bold text-brand-dark"><?= $total_users ?? 0 ?></div>
-        <div class="text-gray-600 text-sm">Total Users</div>
+<!-- Dashboard Overview Tab -->
+<div id="dashboard-tab" class="tab-content active">
+    <!-- Overview Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-lg p-6 shadow-lg text-center hover:shadow-2xl transition-shadow">
+            <div class="text-5xl mb-2">👥</div>
+            <div class="text-3xl font-bold text-brand-dark"><?= $total_users ?? 0 ?></div>
+            <div class="text-gray-600 text-sm">Total Users</div>
+        </div>
+        <div class="bg-white rounded-lg p-6 shadow-lg text-center hover:shadow-2xl transition-shadow">
+            <div class="text-5xl mb-2">👤</div>
+            <div class="text-3xl font-bold text-brand-dark"><?= count($user_activity ?? []) ?></div>
+            <div class="text-gray-600 text-sm">Active Users</div>
+        </div>
+        <div class="bg-white rounded-lg p-6 shadow-lg text-center hover:shadow-2xl transition-shadow">
+            <div class="text-5xl mb-2">📊</div>
+            <div class="text-3xl font-bold text-brand-dark"><?= count(array_filter($user_activity ?? [], function($u) { 
+                $now = new DateTime();
+                $lastLogin = $u['last_login'] ? new DateTime($u['last_login']) : null;
+                if (!$lastLogin) return false;
+                $interval = $now->diff($lastLogin);
+                $minutes = $interval->days * 24 * 60 + $interval->h * 60 + $interval->i;
+                return $minutes <= 60;
+            })) ?></div>
+            <div class="text-gray-600 text-sm">Recent Activity</div>
+        </div>
     </div>
-    <div class="bg-white rounded-lg p-6 shadow-lg text-center hover:shadow-2xl transition-shadow">
-        <div class="text-5xl mb-2">📅</div>
-        <div class="text-3xl font-bold text-brand-dark"><?= $total_appointments ?? 0 ?></div>
-        <div class="text-gray-600 text-sm">Total Appointments</div>
-    </div>
-    <div class="bg-white rounded-lg p-6 shadow-lg text-center hover:shadow-2xl transition-shadow">
-        <div class="text-5xl mb-2">⏳</div>
-        <div class="text-3xl font-bold text-brand-dark"><?= $pending_appointments ?? 0 ?></div>
-        <div class="text-gray-600 text-sm">Pending</div>
-    </div>
-    <div class="bg-white rounded-lg p-6 shadow-lg text-center hover:shadow-2xl transition-shadow">
-        <div class="text-5xl mb-2">✅</div>
-        <div class="text-3xl font-bold text-brand-dark"><?= $confirmed_appointments ?? 0 ?></div>
-        <div class="text-gray-600 text-sm">Confirmed</div>
+    
+    <div class="text-center py-12 text-gray-600">
+        <div class="text-6xl mb-4">📋</div>
+        <h3 class="text-xl font-semibold mb-2">Dashboard Overview</h3>
+        <p>Use the navigation above to manage users or monitor user activity</p>
     </div>
 </div>
 
-<!-- User Management Section -->
-<div class="bg-white rounded-xl shadow-lg p-8 mb-8">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-brand-dark text-2xl font-bold">👥 User Management</h2>
-        <button onclick="openCreateUserModal()" class="bg-gradient-to-r from-brand-purple to-brand-dark text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
-            + Add User
-        </button>
-    </div>
+<!-- User Management Tab -->
+<div id="users-tab" class="tab-content hidden">
+    <div class="bg-white rounded-xl shadow-lg p-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-brand-dark text-2xl font-bold">👥 User Management</h2>
+            <button onclick="openCreateUserModal()" class="bg-gradient-to-r from-brand-purple to-brand-dark text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+                + Add User
+            </button>
+        </div>
 
-    <?php if (empty($users)): ?>
-        <div class="text-center py-12 text-gray-600">
-            <div class="text-6xl mb-4">👥</div>
-            <h3 class="text-xl font-semibold mb-2">No users yet</h3>
-            <p>Create your first user to get started</p>
-        </div>
-    <?php else: ?>
-        <div class="overflow-x-auto">
-            <table class="w-full border-collapse">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">ID</th>
-                        <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Username</th>
-                        <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Full Name</th>
-                        <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Role</th>
-                        <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Created At</th>
-                        <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($users as $user): ?>
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="p-4 border-b border-gray-200">#<?= str_pad($user['id'], 5, '0', STR_PAD_LEFT) ?></td>
-                        <td class="p-4 border-b border-gray-200"><?= esc($user['username']) ?></td>
-                        <td class="p-4 border-b border-gray-200"><?= esc($user['full_name']) ?></td>
-                        <td class="p-4 border-b border-gray-200">
-                            <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-purple-100 text-purple-800 border border-purple-200">
-                                <?= ucfirst($user['role']) ?>
-                            </span>
-                        </td>
-                        <td class="p-4 border-b border-gray-200"><?= date('M d, Y H:i', strtotime($user['created_at'])) ?></td>
-                        <td class="p-4 border-b border-gray-200">
-                            <div class="flex gap-2">
-                                <button type="button" onclick="openEditUserModal(<?= $user['id'] ?>)" class="bg-gradient-to-r from-purple-800 to-purple-900 hover:from-purple-900 hover:to-indigo-950 text-white px-3 py-1 rounded text-sm font-medium transition-colors">
-                                    Edit
-                                </button>
-                                <button type="button" onclick="deleteUser(<?= $user['id'] ?>)" class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-3 py-1 rounded text-sm font-medium transition-colors">
-                                    Delete
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-    <?php endif; ?>
+        <?php if (empty($users)): ?>
+            <div class="text-center py-12 text-gray-600">
+                <div class="text-6xl mb-4">👥</div>
+                <h3 class="text-xl font-semibold mb-2">No users yet</h3>
+                <p>Create your first user to get started</p>
+            </div>
+        <?php else: ?>
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">ID</th>
+                            <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Username</th>
+                            <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Full Name</th>
+                            <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Role</th>
+                            <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Created At</th>
+                            <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($users as $user): ?>
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="p-4 border-b border-gray-200">#<?= str_pad($user['id'], 5, '0', STR_PAD_LEFT) ?></td>
+                            <td class="p-4 border-b border-gray-200"><?= esc($user['username']) ?></td>
+                            <td class="p-4 border-b border-gray-200"><?= esc($user['full_name']) ?></td>
+                            <td class="p-4 border-b border-gray-200">
+                                <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-purple-100 text-purple-800 border border-purple-200">
+                                    <?= ucfirst($user['role']) ?>
+                                </span>
+                            </td>
+                            <td class="p-4 border-b border-gray-200"><?= date('M d, Y H:i', strtotime($user['created_at'])) ?></td>
+                            <td class="p-4 border-b border-gray-200">
+                                <div class="flex gap-2">
+                                    <button type="button" onclick="openEditUserModal(<?= $user['id'] ?>)" class="bg-gradient-to-r from-purple-800 to-purple-900 hover:from-purple-900 hover:to-indigo-950 text-white px-3 py-1 rounded text-sm font-medium transition-colors">
+                                        Edit
+                                    </button>
+                                    <button type="button" onclick="deleteUser(<?= $user['id'] ?>)" class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-3 py-1 rounded text-sm font-medium transition-colors">
+                                        Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
 </div>
 
-<!-- Appointments Section -->
-<div class="bg-white rounded-xl shadow-lg p-8">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-brand-dark text-2xl font-bold">📅 Recent Appointments</h2>
-        <a href="<?= base_url('receptionist') ?>" class="bg-gradient-to-r from-brand-purple to-brand-dark text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
-            View All Appointments
-        </a>
-    </div>
+<!-- User Activity Tab -->
+<div id="activity-tab" class="tab-content hidden">
+    <div class="bg-white rounded-xl shadow-lg p-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-brand-dark text-2xl font-bold">👤 User Activity Monitor</h2>
+            <div class="text-sm text-gray-600">
+                Last updated: <?= date('M d, Y H:i') ?>
+            </div>
+        </div>
 
-    <?php if (empty($appointments)): ?>
-        <div class="text-center py-12 text-gray-600">
-            <div class="text-6xl mb-4">📅</div>
-            <h3 class="text-xl font-semibold mb-2">No appointments yet</h3>
-            <p>Appointments will appear here when created</p>
-        </div>
-    <?php else: ?>
-        <div class="overflow-x-auto">
-            <table class="w-full border-collapse">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">ID</th>
-                        <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Customer</th>
-                        <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Service</th>
-                        <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Date</th>
-                        <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Time</th>
-                        <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach (array_slice($appointments, 0, 5) as $appointment): ?>
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="p-4 border-b border-gray-200">#<?= str_pad($appointment['id'], 5, '0', STR_PAD_LEFT) ?></td>
-                        <td class="p-4 border-b border-gray-200"><?= esc($appointment['customer_name']) ?></td>
-                        <td class="p-4 border-b border-gray-200"><?= esc($appointment['service_type']) ?></td>
-                        <td class="p-4 border-b border-gray-200"><?= date('M d, Y', strtotime($appointment['appointment_date'])) ?></td>
-                        <td class="p-4 border-b border-gray-200"><?= date('h:i A', strtotime($appointment['appointment_time'])) ?></td>
-                        <td class="p-4 border-b border-gray-200">
-                            <?php
-                            $statusClasses = [
-                                'pending' => 'bg-yellow-100 text-yellow-800',
-                                'confirmed' => 'bg-green-100 text-green-800',
-                                'completed' => 'bg-blue-100 text-blue-800',
-                                'cancelled' => 'bg-red-100 text-red-800'
-                            ];
-                            $statusClass = $statusClasses[$appointment['status']] ?? 'bg-gray-100 text-gray-800';
-                            ?>
-                            <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold <?= $statusClass ?>">
-                                <?= ucfirst($appointment['status']) ?>
-                            </span>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-    <?php endif; ?>
+        <?php if (empty($user_activity ?? [])): ?>
+            <div class="text-center py-12 text-gray-600">
+                <div class="text-6xl mb-4">👤</div>
+                <h3 class="text-xl font-semibold mb-2">No recent activity</h3>
+                <p>User login activity will appear here</p>
+            </div>
+        <?php else: ?>
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Username</th>
+                            <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Full Name</th>
+                            <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Role</th>
+                            <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Last Login</th>
+                            <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Status</th>
+                            <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($user_activity as $activity): ?>
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="p-4 border-b border-gray-200 font-medium"><?= esc($activity['username']) ?></td>
+                            <td class="p-4 border-b border-gray-200"><?= esc($activity['full_name']) ?></td>
+                            <td class="p-4 border-b border-gray-200">
+                                <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-purple-100 text-purple-800 border border-purple-200">
+                                    <?= ucfirst($activity['role']) ?>
+                                </span>
+                            </td>
+                            <td class="p-4 border-b border-gray-200">
+                                <?php if ($activity['last_login']): ?>
+                                    <?= date('M d, Y H:i', strtotime($activity['last_login'])) ?>
+                                <?php else: ?>
+                                    <span class="text-gray-500">Never logged in</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="p-4 border-b border-gray-200">
+                                <?php 
+                                $now = new DateTime();
+                                $lastLogin = $activity['last_login'] ? new DateTime($activity['last_login']) : null;
+                                $status = 'offline';
+                                $statusClass = 'bg-gray-100 text-gray-800';
+                                
+                                if ($lastLogin) {
+                                    $interval = $now->diff($lastLogin);
+                                    $minutes = $interval->days * 24 * 60 + $interval->h * 60 + $interval->i;
+                                    
+                                    if ($minutes <= 5) {
+                                        $status = 'online';
+                                        $statusClass = 'bg-green-100 text-green-800';
+                                    } elseif ($minutes <= 60) {
+                                        $status = 'recent';
+                                        $statusClass = 'bg-yellow-100 text-yellow-800';
+                                    }
+                                }
+                                ?>
+                                <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold <?= $statusClass ?>">
+                                    <?= ucfirst($status) ?>
+                                </span>
+                            </td>
+                            <td class="p-4 border-b border-gray-200">
+                                <div class="flex gap-2">
+                                    <button type="button" onclick="viewUserDetails(<?= $activity['id'] ?>)" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors">
+                                        View Details
+                                    </button>
+                                    <?php if ($activity['role'] !== 'admin'): ?>
+                                        <button type="button" onclick="resetUserPassword(<?= $activity['id'] ?>)" class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors">
+                                            Reset Password
+                                        </button>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
 </div>
 
 <!-- Create User Modal -->
@@ -616,6 +662,37 @@ function showFlashMessage(message, type) {
         flashMessage.remove();
     }, 3000);
 }
+
+// Tab switching functionality
+function showTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.add('hidden');
+        tab.classList.remove('active');
+    });
+    
+    // Show selected tab
+    const selectedTab = document.getElementById(tabName);
+    if (selectedTab) {
+        selectedTab.classList.remove('hidden');
+        selectedTab.classList.add('active');
+    }
+}
+
+// Initialize tabs based on URL parameters
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get('tab');
+    
+    // Default to dashboard tab if no tab parameter
+    if (tab === 'users') {
+        showTab('users-tab');
+    } else if (tab === 'activity') {
+        showTab('activity-tab');
+    } else {
+        showTab('dashboard-tab');
+    }
+});
 </script>
 
 <?= $this->endSection() ?>
