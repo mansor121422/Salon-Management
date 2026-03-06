@@ -30,7 +30,7 @@
                     <span class="w-4 h-4 rounded-full border-2 border-white inline-block"></span>
                     <span class="w-4 h-4 rounded-full border-2 border-white inline-block"></span>
                 </div>
-                <h1 class="text-xl md:text-2xl font-bold tracking-tight uppercase">Salon</h1>
+                <h1 class="text-xl md:text-2xl font-bold tracking-tight uppercase">Chanelle Salon</h1>
             </div>
 
             <nav class="hidden md:flex items-center space-x-8 text-sm font-medium">
@@ -84,7 +84,7 @@
     </main>
 
     <footer class="text-center text-sm text-gray-500 py-8">
-        © 2024 My Salon Manager. All rights reserved.
+        © 2024 Chanelle Salon. All rights reserved.
     </footer>
 
 </body>

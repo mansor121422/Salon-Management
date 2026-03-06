@@ -19,7 +19,7 @@
             <div class="text-lg font-semibold text-gray-800 mb-4">Hello <?= esc($customer_name) ?>,</div>
             
             <p class="text-gray-600 mb-6 leading-relaxed">
-                We're excited to confirm your appointment at Chanell Salon. Your booking details are shown below.
+                We're excited to confirm your appointment at Chanelle Salon. Your booking details are shown below.
             </p>
 
             <!-- Appointment Details -->
@@ -87,7 +87,7 @@
 
         <!-- Footer -->
         <div class="bg-gray-50 border-t border-gray-200 py-6 px-8 text-center">
-            <p class="text-gray-800 font-semibold text-lg mb-1">Chanell Salon</p>
+            <p class="text-gray-800 font-semibold text-lg mb-1">Chanelle Salon</p>
             <p class="text-gray-600 mb-4">Professional Beauty & Hair Services</p>
             <p class="text-sm text-gray-500">
                 For questions or assistance, please contact our reception desk.<br>

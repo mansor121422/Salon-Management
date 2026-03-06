@@ -8,7 +8,7 @@ class Email extends BaseConfig
 {
     // Gmail SMTP Configuration
     public string $fromEmail  = 'benzmenguito123@gmail.com';  // Replace with your Gmail address
-    public string $fromName   = 'Chanell Salon';
+    public string $fromName   = 'Chanelle Salon';
     public string $recipients = '';
 
     /**

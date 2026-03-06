@@ -24,7 +24,7 @@
     <?php if (session()->get('logged_in')): ?>
     <nav class="bg-brand-dark shadow-lg px-8 py-4">
                 <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl md:text-2xl font-bold tracking-tight uppercase text-white">Salon</h1>
+            <h1 class="text-xl md:text-2xl font-bold tracking-tight uppercase text-white">Chanelle Salon</h1>
             <div class="flex items-center space-x-6">
                 <a href="<?= base_url('receptionist') ?>" class="text-white hover:text-brand-purple transition-colors">Dashboard</a>
                 <a href="<?= base_url('receptionist?show_modal=true') ?>" class="text-white hover:text-brand-purple transition-colors">New Appointment</a>
@@ -52,7 +52,7 @@
     </div>
 
     <footer class="bg-brand-dark py-6 text-center text-white mt-auto">
-        <p>&copy; <?= date('Y') ?> Local Salon Management System</p>
+        <p> © 2024 Chanelle Salon. All rights reserved. </p>
     </footer>
 </body>
 </html>
