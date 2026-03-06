@@ -48,6 +48,8 @@ class AuthController extends BaseController
                 // Redirect based on user role
                 if (strtolower($roleName) === 'receptionist') {
                     return redirect()->to(base_url('receptionist'));
+                } elseif (strtolower($roleName) === 'admin') {
+                    return redirect()->to(base_url('admin'));
                 } else {
                     return redirect()->to(base_url('dashboard'));
                 }
