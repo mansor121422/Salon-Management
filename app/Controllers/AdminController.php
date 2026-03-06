@@ -22,7 +22,7 @@ class AdminController extends BaseController
         // Get all users
         $data['users'] = $userModel->findAll();
 
-        // Get user activity data (users with their last login info)
+        // Get user activity data 
         $data['user_activity'] = $this->getUserActivity();
 
         // Get statistics
@@ -85,7 +85,7 @@ class AdminController extends BaseController
         
         $data = [
             'username' => $this->request->getPost('username'),
-            'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
+            'password' => password_hash('chanelle', PASSWORD_DEFAULT),
             'full_name' => $this->request->getPost('full_name'),
             'role' => $this->request->getPost('role')
         ];
@@ -168,9 +168,9 @@ class AdminController extends BaseController
     }
 
     /**
-     * Delete user
+     * Toggle user status (activate/deactivate)
      */
-    public function deleteUser($id)
+    public function toggleUserStatus($id)
     {
         if (!session()->get('logged_in')) {
             return redirect()->to(base_url('login'));
@@ -183,21 +183,42 @@ class AdminController extends BaseController
 
         $model = new UserModel();
         
-        if ($model->delete($id)) {
-            session()->setFlashdata('success', 'User deleted successfully!');
+        // Get current user data
+        $user = $model->find($id);
+        if (!$user) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'User not found.'
+            ]);
+        }
+
+        // Prevent editing the admin user
+        if ($user['role'] === 'admin') {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Cannot modify admin user. This user is protected.'
+            ]);
+        }
+
+        // Toggle status
+        $newStatus = $user['status'] === 'active' ? 'inactive' : 'active';
+        
+        if ($model->update($id, ['status' => $newStatus])) {
+            session()->setFlashdata('success', 'User status updated successfully!');
             
             return $this->response->setJSON([
                 'success' => true,
-                'message' => 'User deleted successfully!',
-                'redirect_url' => base_url('admin')
+                'message' => 'User status updated successfully!',
+                'new_status' => $newStatus
             ]);
         } else {
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Failed to delete user. Please try again.'
+                'message' => 'Failed to update user status. Please try again.'
             ]);
         }
     }
+
 
     /**
      * Get all users

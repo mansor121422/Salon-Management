@@ -19,7 +19,7 @@
         </div>
         <div class="bg-white rounded-lg p-6 shadow-lg text-center hover:shadow-2xl transition-shadow">
             <div class="text-5xl mb-2">👤</div>
-            <div class="text-3xl font-bold text-brand-dark"><?= count($user_activity ?? []) ?></div>
+            <div class="text-3xl font-bold text-brand-dark"><?= count(array_filter($user_activity ?? [], function($u) { return $u['status'] === 'active'; })) ?></div>
             <div class="text-gray-600 text-sm">Active Users</div>
         </div>
         <div class="bg-white rounded-lg p-6 shadow-lg text-center hover:shadow-2xl transition-shadow">
@@ -64,18 +64,17 @@
                 <table class="w-full border-collapse">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">ID</th>
                             <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Username</th>
                             <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Full Name</th>
                             <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Role</th>
                             <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Created At</th>
+                            <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Status</th>
                             <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($users as $user): ?>
                         <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="p-4 border-b border-gray-200">#<?= str_pad($user['id'], 5, '0', STR_PAD_LEFT) ?></td>
                             <td class="p-4 border-b border-gray-200"><?= esc($user['username']) ?></td>
                             <td class="p-4 border-b border-gray-200"><?= esc($user['full_name']) ?></td>
                             <td class="p-4 border-b border-gray-200">
@@ -85,13 +84,19 @@
                             </td>
                             <td class="p-4 border-b border-gray-200"><?= date('M d, Y H:i', strtotime($user['created_at'])) ?></td>
                             <td class="p-4 border-b border-gray-200">
+                                <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold <?= $user['status'] === 'active' ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200' ?>">
+                                    <?= ucfirst($user['status']) ?>
+                                </span>
+                            </td>
+                            <td class="p-4 border-b border-gray-200">
                                 <div class="flex gap-2">
-                                    <button type="button" onclick="openEditUserModal(<?= $user['id'] ?>)" class="bg-gradient-to-r from-purple-800 to-purple-900 hover:from-purple-900 hover:to-indigo-950 text-white px-3 py-1 rounded text-sm font-medium transition-colors">
-                                        Edit
-                                    </button>
-                                    <button type="button" onclick="deleteUser(<?= $user['id'] ?>)" class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-3 py-1 rounded text-sm font-medium transition-colors">
-                                        Delete
-                                    </button>
+                                    <?php if ($user['role'] !== 'admin'): ?>
+                                        <button type="button" onclick="toggleUserStatus(<?= $user['id'] ?>, '<?= $user['status'] ?>')" class="bg-gradient-to-r from-<?= $user['status'] === 'active' ? 'red-600' : 'green-600' ?> to-<?= $user['status'] === 'active' ? 'red-700' : 'green-700' ?> hover:from-<?= $user['status'] === 'active' ? 'red-700' : 'green-700' ?> hover:to-<?= $user['status'] === 'active' ? 'red-800' : 'green-800' ?> text-white px-3 py-1 rounded text-sm font-medium transition-colors">
+                                            <?= $user['status'] === 'active' ? 'Deactivate' : 'Activate' ?>
+                                        </button>
+                                    <?php else: ?>
+                                        <span class="text-gray-500 text-sm italic">Protected</span>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
@@ -229,16 +234,6 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                    <label for="password" class="block mb-2 text-gray-700 font-medium">
-                        Password <span class="text-red-500">*</span>
-                    </label>
-                    <input type="password" id="password" name="password" 
-                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all duration-300"
-                           required oninput="validatePassword()">
-                    <div id="password-error" class="mt-2 text-red-500 text-sm hidden"></div>
-                </div>
-
-                <div>
                     <label for="role" class="block mb-2 text-gray-700 font-medium">
                         Role <span class="text-red-500">*</span>
                     </label>
@@ -248,7 +243,6 @@
                         <option value="">-- Select Role --</option>
                         <option value="admin" <?= old('role') == 'admin' ? 'selected' : '' ?>>Admin</option>
                         <option value="receptionist" <?= old('role') == 'receptionist' ? 'selected' : '' ?>>Receptionist</option>
-                        <option value="user" <?= old('role') == 'user' ? 'selected' : '' ?>>User</option>
                     </select>
                 </div>
             </div>
@@ -361,7 +355,6 @@ function openCreateUserModal() {
     document.getElementById('create-user-form').reset();
     document.getElementById('username-error').classList.add('hidden');
     document.getElementById('fullname-error').classList.add('hidden');
-    document.getElementById('password-error').classList.add('hidden');
     document.querySelectorAll('input, select').forEach(el => {
         el.classList.remove('border-red-500');
         el.classList.add('border-gray-200', 'focus:border-indigo-500');
@@ -373,7 +366,6 @@ function closeCreateUserModal() {
     document.getElementById('create-user-form').reset();
     document.getElementById('username-error').classList.add('hidden');
     document.getElementById('fullname-error').classList.add('hidden');
-    document.getElementById('password-error').classList.add('hidden');
     document.querySelectorAll('input, select').forEach(el => {
         el.classList.remove('border-red-500');
         el.classList.add('border-gray-200', 'focus:border-indigo-500');
@@ -469,40 +461,12 @@ function validateFullName() {
     }
 }
 
-function validatePassword() {
-    const passwordInput = document.getElementById('password');
-    const passwordError = document.getElementById('password-error');
-    const password = passwordInput.value;
-
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    
-    if (password.length > 0) {
-        if (!passwordRegex.test(password)) {
-            passwordInput.classList.add('border-red-500');
-            passwordInput.classList.remove('border-gray-200', 'focus:border-indigo-500');
-            passwordError.classList.remove('hidden');
-            passwordError.textContent = 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character';
-            return false;
-        } else {
-            passwordInput.classList.remove('border-red-500');
-            passwordInput.classList.add('border-gray-200', 'focus:border-indigo-500');
-            passwordError.classList.add('hidden');
-            return true;
-        }
-    } else {
-        passwordInput.classList.remove('border-red-500');
-        passwordInput.classList.add('border-gray-200', 'focus:border-indigo-500');
-        passwordError.classList.add('hidden');
-        return true;
-    }
-}
 
 function validateUserForm() {
     const isUsernameValid = validateUsername();
     const isFullNameValid = validateFullName();
-    const isPasswordValid = validatePassword();
     
-    return isUsernameValid && isFullNameValid && isPasswordValid;
+    return isUsernameValid && isFullNameValid;
 }
 
 // Success modal display function
@@ -556,7 +520,6 @@ function deleteUser(userId) {
 document.addEventListener('DOMContentLoaded', function() {
     const usernameInput = document.getElementById('username');
     const fullNameInput = document.getElementById('full_name');
-    const passwordInput = document.getElementById('password');
     
     if (usernameInput) {
         usernameInput.addEventListener('input', validateUsername);
@@ -566,11 +529,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (fullNameInput) {
         fullNameInput.addEventListener('input', validateFullName);
         fullNameInput.addEventListener('blur', validateFullName);
-    }
-    
-    if (passwordInput) {
-        passwordInput.addEventListener('input', validatePassword);
-        passwordInput.addEventListener('blur', validatePassword);
     }
     
     const createUserForm = document.getElementById('create-user-form');
@@ -662,6 +620,120 @@ function showFlashMessage(message, type) {
         flashMessage.remove();
     }, 3000);
 }
+
+// Toggle user status function
+function toggleUserStatus(userId, currentStatus) {
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    const actionText = newStatus === 'active' ? 'activate' : 'deactivate';
+    
+    if (confirm(`Are you sure you want to ${actionText} this user?`)) {
+        fetch(`<?= base_url('admin/users/toggle/') ?>${userId}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                status: newStatus
+            })
+        })
+        .then(response => {
+            // Check if response is ok
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data && data.success) {
+                showFlashMessage(`User ${actionText}d successfully!`, 'success');
+                // Update the UI immediately
+                const buttons = document.querySelectorAll('button');
+                let targetButton = null;
+                
+                // Find the button for this specific user
+                for (let button of buttons) {
+                    if (button.onclick && button.onclick.toString().includes(`toggleUserStatus(${userId})`)) {
+                        targetButton = button;
+                        break;
+                    }
+                }
+                
+                if (targetButton) {
+                    const row = targetButton.closest('tr');
+                    if (row) {
+                        const statusCell = row.querySelector('td:nth-child(6) span');
+                        const actionButton = targetButton;
+                        
+                        if (statusCell && actionButton) {
+                            if (newStatus === 'active') {
+                                statusCell.className = 'inline-block px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800 border border-green-200';
+                                statusCell.textContent = 'Active';
+                                actionButton.className = 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-3 py-1 rounded text-sm font-medium transition-colors';
+                                actionButton.textContent = 'Deactivate';
+                            } else {
+                                statusCell.className = 'inline-block px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-800 border border-red-200';
+                                statusCell.textContent = 'Inactive';
+                                actionButton.className = 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-3 py-1 rounded text-sm font-medium transition-colors';
+                                actionButton.textContent = 'Activate';
+                            }
+                        }
+                    }
+                }
+                
+                // Update dashboard statistics in real-time
+                updateDashboardStats(newStatus, currentStatus);
+            } else {
+                // Handle error response
+                const errorMessage = data && data.message ? data.message : 'Failed to update user status.';
+                showFlashMessage(errorMessage, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Check if it's a network error or server error
+            if (error.message.includes('HTTP error')) {
+                showFlashMessage('Server error occurred. Please try again.', 'error');
+            } else {
+                showFlashMessage('Network error. Please check your connection and try again.', 'error');
+            }
+        });
+    }
+}
+
+// Update dashboard statistics in real-time
+function updateDashboardStats(newStatus, oldStatus) {
+    // Get the dashboard stat elements
+    const totalUsersElement = document.querySelector('.bg-white.rounded-lg.p-6.shadow-lg.text-center.hover\\:shadow-2xl.transition-shadow:nth-child(1) .text-3xl.font-bold.text-brand-dark');
+    const activeUsersElement = document.querySelector('.bg-white.rounded-lg.p-6.shadow-lg.text-center.hover\\:shadow-2xl.transition-shadow:nth-child(2) .text-3xl.font-bold.text-brand-dark');
+    
+    if (totalUsersElement && activeUsersElement) {
+        // Get current values
+        let currentTotal = parseInt(totalUsersElement.textContent) || 0;
+        let currentActive = parseInt(activeUsersElement.textContent) || 0;
+        
+        // Update counts based on status change
+        if (oldStatus === 'active' && newStatus === 'inactive') {
+            // User was deactivated
+            currentActive = Math.max(0, currentActive - 1);
+        } else if (oldStatus === 'inactive' && newStatus === 'active') {
+            // User was activated
+            currentActive = Math.min(currentTotal, currentActive + 1);
+        }
+        
+        // Update the DOM with new values
+        activeUsersElement.textContent = currentActive;
+        
+        // Add a subtle animation to show the update
+        activeUsersElement.style.transform = 'scale(1.1)';
+        activeUsersElement.style.transition = 'transform 0.2s ease';
+        
+        setTimeout(() => {
+            activeUsersElement.style.transform = 'scale(1)';
+        }, 200);
+    }
+}
+
 
 // Tab switching functionality
 function showTab(tabName) {

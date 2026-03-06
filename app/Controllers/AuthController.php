@@ -23,6 +23,12 @@ class AuthController extends BaseController
         
         if ($user) {
             if (password_verify($password, $user['password'])) {
+                // Check if user account is active
+                if (isset($user['status']) && $user['status'] === 'inactive') {
+                    $session->setFlashdata('error', 'Your account has been deactivated. Please contact the System Administrator.');
+                    return redirect()->to(base_url('login'));
+                }
+                
                 // Store role id and role name in session when available
                 $roleId = $user['role_id'] ?? null;
                 $roleName = null;

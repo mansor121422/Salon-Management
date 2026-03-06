@@ -34,7 +34,7 @@ $routes->get('/admin/users/create', 'AdminController::createUser');
 $routes->post('/admin/users/store', 'AdminController::storeUser');
 $routes->get('/admin/users/edit/(:num)', 'AdminController::editUser/$1');
 $routes->post('/admin/users/update/(:num)', 'AdminController::updateUser/$1');
-$routes->post('/admin/users/delete/(:num)', 'AdminController::deleteUser/$1');
+$routes->post('/admin/users/toggle/(:num)', 'AdminController::toggleUserStatus/$1');
 $routes->get('/admin/users/all', 'AdminController::getAllUsers');
 
 // Legacy routes for backward compatibility (redirect to receptionist routes)
