@@ -29,6 +29,9 @@ class AuthController extends BaseController
                     return redirect()->to(base_url('login'));
                 }
                 
+                date_default_timezone_set('Asia/Manila');
+                $model->update($user['id'], ['last_login' => date('Y-m-d H:i:s')]);
+                
                 // Store role id and role name in session when available
                 $roleId = $user['role_id'] ?? null;
                 $roleName = null;

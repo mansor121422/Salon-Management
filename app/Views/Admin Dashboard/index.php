@@ -113,9 +113,12 @@
     <div class="bg-white rounded-xl shadow-lg p-8">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-brand-dark text-2xl font-bold">👤 User Activity Monitor</h2>
-            <div class="text-sm text-gray-600">
-                Last updated: <?= date('M d, Y H:i') ?>
-            </div>
+        <div class="text-sm text-gray-600">
+            Last updated: <span id="last-updated"><?= date('M d, Y H:i') ?></span>
+            <button onclick="refreshActivity()" class="ml-4 bg-gradient-to-r from-purple-800 to-purple-900 hover:from-purple-900 hover:to-indigo-900 text-white px-3 py-1 rounded text-sm font-medium transition-colors">
+                Refresh
+            </button>
+        </div>
         </div>
 
         <?php if (empty($user_activity ?? [])): ?>
@@ -180,14 +183,9 @@
                             </td>
                             <td class="p-4 border-b border-gray-200">
                                 <div class="flex gap-2">
-                                    <button type="button" onclick="viewUserDetails(<?= $activity['id'] ?>)" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors">
+                                    <button type="button" onclick="viewUserDetails(<?= $activity['id'] ?>)" class="bg-gradient-to-r from-purple-800 to-purple-900 hover:from-purple-900 hover:to-indigo-900 text-white px-3 py-1 rounded text-sm font-medium transition-colors">
                                         View Details
                                     </button>
-                                    <?php if ($activity['role'] !== 'admin'): ?>
-                                        <button type="button" onclick="resetUserPassword(<?= $activity['id'] ?>)" class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors">
-                                            Reset Password
-                                        </button>
-                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
@@ -330,6 +328,26 @@
                 </button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- User Details Modal -->
+<div id="user-details-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl p-8 shadow-xl text-center max-w-2xl w-full mx-4 animate-in scale-95 duration-300">
+        <div class="text-center mb-6">
+            <h2 class="text-purple-900 text-2xl font-bold mb-2">👤 User Details</h2>
+            <p class="text-gray-600">Complete user information</p>
+        </div>
+
+        <div id="user-details-content" class="text-left">
+            <!-- User details will be loaded here -->
+        </div>
+
+        <div class="flex gap-4 mt-6">
+            <button onclick="closeUserDetailsModal()" class="flex-1 bg-gray-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-gray-700 transition-colors duration-300">
+                Close
+            </button>
+        </div>
     </div>
 </div>
 
@@ -748,7 +766,269 @@ function showTab(tabName) {
     if (selectedTab) {
         selectedTab.classList.remove('hidden');
         selectedTab.classList.add('active');
+        
+        // If switching to activity tab, start auto-refresh
+        if (tabName === 'activity-tab') {
+            startActivityMonitoring();
+        }
     }
+}
+
+// Real-time activity monitoring
+let activityInterval;
+let isMonitoring = false;
+
+function startActivityMonitoring() {
+    if (isMonitoring) return;
+    
+    isMonitoring = true;
+    activityInterval = setInterval(() => {
+        refreshActivity(true); // Silent refresh
+    }, 30000); // Refresh every 30 seconds
+}
+
+function stopActivityMonitoring() {
+    if (activityInterval) {
+        clearInterval(activityInterval);
+        activityInterval = null;
+        isMonitoring = false;
+    }
+}
+
+function refreshActivity(showNotification = false) {
+    // Update last updated time 
+    const now = new Date();
+    const timeString = now.toLocaleString('en-PH', {
+        month: 'short',
+        day: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Asia/Manila'
+    });
+    
+    document.getElementById('last-updated').textContent = timeString;
+    
+    // Fetch updated activity data
+    fetch('<?= base_url('admin/activity') ?>')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.user_activity) {
+                updateActivityTable(data.user_activity);
+                
+                if (showNotification) {
+                    // Show subtle notification for silent refresh
+                    const notification = document.createElement('div');
+                    notification.className = 'fixed top-4 right-4 bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded z-50 animate-in slide-in-from-right duration-300';
+                    notification.textContent = 'Activity data updated';
+                    document.body.appendChild(notification);
+                    
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 2000);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error refreshing activity:', error);
+        });
+}
+
+function updateActivityTable(userActivity) {
+    const tbody = document.querySelector('#activity-tab tbody');
+    if (!tbody) return;
+    
+    // Clear existing rows
+    tbody.innerHTML = '';
+    
+    // Add updated rows
+    userActivity.forEach(user => {
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-50 transition-colors';
+        
+        const statusClass = user.is_online ? 'bg-green-100 text-green-800' : 
+                           (user.activity_status === 'recent' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800');
+        const statusText = user.is_online ? 'Online' : 
+                          (user.activity_status === 'recent' ? 'Recent' : 'Offline');
+        
+        row.innerHTML = `
+            <td class="p-4 border-b border-gray-200 font-medium">${user.username}</td>
+            <td class="p-4 border-b border-gray-200">${user.full_name}</td>
+            <td class="p-4 border-b border-gray-200">
+                <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-purple-100 text-purple-800 border border-purple-200">
+                    ${user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                </span>
+            </td>
+            <td class="p-4 border-b border-gray-200">
+                ${user.last_login_formatted}
+            </td>
+            <td class="p-4 border-b border-gray-200">
+                <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold ${statusClass}">
+                    ${statusText}
+                </span>
+            </td>
+            <td class="p-4 border-b border-gray-200">
+                <div class="flex gap-2">
+                    <button type="button" onclick="viewUserDetails(${user.id})" class="bg-gradient-to-r from-purple-800 to-purple-900 hover:from-purple-900 hover:to-indigo-900 text-white px-3 py-1 rounded text-sm font-medium transition-colors">
+                        View Details
+                    </button>
+                </div>
+            </td>
+        `;
+        
+        tbody.appendChild(row);
+    });
+}
+
+// View User Details functionality
+function viewUserDetails(userId) {
+    fetch(`<?= base_url('admin/users/details/') ?>${userId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.user) {
+                displayUserDetails(data.user);
+            } else {
+                showFlashMessage(data.message || 'Failed to load user details.', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showFlashMessage('An error occurred while loading user details.', 'error');
+        });
+}
+
+function displayUserDetails(user) {
+    const modal = document.getElementById('user-details-modal');
+    const content = document.getElementById('user-details-content');
+    
+    // Format dates with Philippines time
+    const createdDate = user.created_at ? new Date(user.created_at).toLocaleString('en-PH', {
+        timeZone: 'Asia/Manila',
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    }) : 'N/A';
+    
+    const lastLoginDate = user.last_login ? new Date(user.last_login).toLocaleString('en-PH', {
+        timeZone: 'Asia/Manila',
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    }) : 'Never logged in';
+    
+    // Calculate activity status
+    let activityStatus = 'Offline';
+    let statusClass = 'bg-gray-100 text-gray-800';
+    
+    if (user.last_login) {
+        const lastLoginTime = new Date(user.last_login);
+        const currentTime = new Date();
+        const interval = currentTime - lastLoginTime;
+        const minutes = Math.floor(interval / (1000 * 60));
+        
+        if (minutes <= 5) {
+            activityStatus = 'Online';
+            statusClass = 'bg-green-100 text-green-800';
+        } else if (minutes <= 60) {
+            activityStatus = 'Recent';
+            statusClass = 'bg-yellow-100 text-yellow-800';
+        }
+    }
+    
+    content.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="font-semibold text-gray-800 mb-2">👤 Basic Information</h3>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Username:</span>
+                        <span class="font-medium">${user.username}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Full Name:</span>
+                        <span class="font-medium">${user.full_name}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Role:</span>
+                        <span class="font-medium">
+                            <span class="inline-block px-2 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 border border-purple-200">
+                                ${user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                            </span>
+                        </span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Status:</span>
+                        <span class="font-medium">
+                            <span class="inline-block px-2 py-1 rounded-full text-xs font-semibold ${user.status === 'active' ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}">
+                                ${user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                            </span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="font-semibold text-gray-800 mb-2">📊 Activity Information</h3>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Account Created:</span>
+                        <span class="font-medium">${createdDate}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Last Login:</span>
+                        <span class="font-medium">${lastLoginDate}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Current Status:</span>
+                        <span class="font-medium">
+                            <span class="inline-block px-2 py-1 rounded-full text-xs font-semibold ${statusClass}">
+                                ${activityStatus}
+                            </span>
+                        </span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">User ID:</span>
+                        <span class="font-medium text-blue-600">#${user.id}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Activity Timeline -->
+        <div class="mt-6 bg-gray-50 p-4 rounded-lg">
+            <h3 class="font-semibold text-gray-800 mb-2">📈 Activity Timeline</h3>
+            <div class="space-y-2">
+                <div class="flex items-center space-x-3">
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span class="text-sm text-gray-600">Account created on ${createdDate}</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="w-3 h-3 ${user.last_login ? 'bg-blue-500' : 'bg-gray-400'} rounded-full"></div>
+                    <span class="text-sm text-gray-600">${user.last_login ? `Last login on ${lastLoginDate}` : 'No login activity yet'}</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="w-3 h-3 ${user.status === 'active' ? 'bg-green-500' : 'bg-red-500'} rounded-full"></div>
+                    <span class="text-sm text-gray-600">Account is currently ${user.status}</span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    
+    modal.classList.remove('hidden');
+}
+
+function closeUserDetailsModal() {
+    document.getElementById('user-details-modal').classList.add('hidden');
+}
+
+function openEditUserModalFromDetails() {
+    // This function will be called when the edit button is clicked from the details modal
+    // The actual edit button onclick is set in displayUserDetails function
 }
 
 // Initialize tabs based on URL parameters
@@ -764,6 +1044,24 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         showTab('dashboard-tab');
     }
+    
+    // Add event listener to stop monitoring when leaving activity tab
+    document.querySelectorAll('button[onclick*="showTab"]').forEach(button => {
+        button.addEventListener('click', function() {
+            const tabName = this.getAttribute('onclick').match(/showTab\('([^']+)'\)/)[1];
+            if (tabName !== 'activity-tab') {
+                stopActivityMonitoring();
+            }
+        });
+    });
+    
+    // Add keyboard shortcut for quick refresh (Ctrl+R)
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'r') {
+            e.preventDefault();
+            refreshActivity();
+        }
+    });
 });
 </script>
 

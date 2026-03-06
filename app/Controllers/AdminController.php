@@ -243,14 +243,142 @@ class AdminController extends BaseController
         ]);
     }
 
+    /**
+     * Get activity data for AJAX requests
+     */
+    public function getActivityData()
+    {
+        if (!session()->get('logged_in')) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        $role = strtolower((string) session()->get('role'));
+        if ($role !== 'admin') {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Forbidden'
+            ], 403);
+        }
+
+        $userModel = new UserModel();
+        
+        // Get all users with their activity data
+        $users = $userModel->findAll();
+        
+        // Add activity status and calculate online status
+        foreach ($users as &$user) {
+            $user['is_online'] = false;
+            $user['activity_status'] = 'offline';
+            
+            if ($user['last_login']) {
+                $lastLoginTime = new \DateTime($user['last_login']);
+                $currentTime = new \DateTime();
+                $interval = $currentTime->diff($lastLoginTime);
+                $minutes = $interval->days * 24 * 60 + $interval->h * 60 + $interval->i;
+                
+                if ($minutes <= 5) {
+                    $user['is_online'] = true;
+                    $user['activity_status'] = 'online';
+                } elseif ($minutes <= 60) {
+                    $user['activity_status'] = 'recent';
+                }
+            }
+
+            if ($user['last_login']) {
+                date_default_timezone_set('Asia/Manila');
+                $user['last_login_formatted'] = date('M d, Y H:i', strtotime($user['last_login']));
+            } else {
+                $user['last_login_formatted'] = 'Never logged in';
+            }
+        }
+        
+        return $this->response->setJSON([
+            'success' => true,
+            'user_activity' => $users,
+            'timestamp' => date('Y-m-d H:i:s')
+        ]);
+    }
+
+    public function getUserDetails($id)
+    {
+        if (!session()->get('logged_in')) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        $role = strtolower((string) session()->get('role'));
+        if ($role !== 'admin') {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Forbidden'
+            ], 403);
+        }
+
+        $userModel = new UserModel();
+        $user = $userModel->find($id);
+        
+        if (!$user) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'User not found.'
+            ]);
+        }
+
+        // Format dates with Philippines time
+        date_default_timezone_set('Asia/Manila');
+        
+        return $this->response->setJSON([
+            'success' => true,
+            'user' => [
+                'id' => $user['id'],
+                'username' => $user['username'],
+                'full_name' => $user['full_name'],
+                'role' => $user['role'],
+                'status' => $user['status'],
+                'created_at' => $user['created_at'],
+                'last_login' => $user['last_login']
+            ]
+        ]);
+    }
+
     private function getUserActivity()
     {
         $userModel = new UserModel();
         
+        // Get all users with their activity data
         $users = $userModel->findAll();
         
+        // Add activity status and calculate online status
         foreach ($users as &$user) {
-            $user['last_login'] = $user['created_at'];
+            // Calculate if user is currently online (logged in within last 5 minutes)
+            $user['is_online'] = false;
+            $user['activity_status'] = 'offline';
+            
+            if ($user['last_login']) {
+                $lastLoginTime = new \DateTime($user['last_login']);
+                $currentTime = new \DateTime();
+                $interval = $currentTime->diff($lastLoginTime);
+                $minutes = $interval->days * 24 * 60 + $interval->h * 60 + $interval->i;
+                
+                if ($minutes <= 5) {
+                    $user['is_online'] = true;
+                    $user['activity_status'] = 'online';
+                } elseif ($minutes <= 60) {
+                    $user['activity_status'] = 'recent';
+                }
+            }
+
+            if ($user['last_login']) {
+                date_default_timezone_set('Asia/Manila');
+                $user['last_login_formatted'] = date('M d, Y H:i', strtotime($user['last_login']));
+            } else {
+                $user['last_login_formatted'] = 'Never logged in';
+            }
         }
         
         return $users;
