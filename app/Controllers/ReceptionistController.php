@@ -22,9 +22,14 @@ class ReceptionistController extends BaseController
         $appointmentModel = new AppointmentModel();
         $db = \Config\Database::connect();
 
-        $data['appointments'] = $appointmentModel->orderBy('appointment_date', 'ASC')
-                                                  ->orderBy('appointment_time', 'ASC')
-                                                  ->findAll();
+        // Get appointments with staff names
+        $data['appointments'] = $db->table('appointments')
+                                   ->select('appointments.*, users.full_name as staff_name')
+                                   ->join('users', 'users.id = appointments.assigned_staff_id', 'left')
+                                   ->orderBy('appointments.appointment_date', 'ASC')
+                                   ->orderBy('appointments.appointment_time', 'ASC')
+                                   ->get()
+                                   ->getResultArray();
 
 
         try {
@@ -58,6 +63,23 @@ class ReceptionistController extends BaseController
         
         $data['service_prices'] = $servicePrices;
 
+        // Get staff members for assignment
+        $staffMembers = [];
+        try {
+            $staffMembers = $db->table('users')
+                              ->select('id, full_name, username')
+                              ->where('role', 'staff')
+                              ->where('status', 'active')
+                              ->orderBy('full_name', 'ASC')
+                              ->get()
+                              ->getResult();
+        } catch (\Exception $e) {
+            log_message('error', 'Failed to fetch staff members: ' . $e->getMessage());
+            $staffMembers = [];
+        }
+        
+        $data['staff_members'] = $staffMembers;
+
         return view('Receptionist Dashboard/index', $data);
     }
 
@@ -90,6 +112,23 @@ class ReceptionistController extends BaseController
         }
         
         $data['service_prices'] = $servicePrices;
+
+        // Get staff members for assignment
+        $staffMembers = [];
+        try {
+            $staffMembers = $db->table('users')
+                              ->select('id, full_name, username')
+                              ->where('role', 'staff')
+                              ->where('status', 'active')
+                              ->orderBy('full_name', 'ASC')
+                              ->get()
+                              ->getResult();
+        } catch (\Exception $e) {
+            log_message('error', 'Failed to fetch staff members: ' . $e->getMessage());
+            $staffMembers = [];
+        }
+        
+        $data['staff_members'] = $staffMembers;
         
         return view('Receptionist Dashboard/index', $data);
     }
@@ -121,7 +160,8 @@ class ReceptionistController extends BaseController
             'appointment_time' => $this->request->getPost('appointment_time'),
             'price'            => $this->request->getPost('price'),
             'notes'            => $this->request->getPost('notes'),
-            'status'           => 'pending' 
+            'status'           => 'pending',
+            'assigned_staff_id' => $this->request->getPost('assigned_staff_id')
         ];
         
         // Check for duplicate appointment time
@@ -168,7 +208,8 @@ class ReceptionistController extends BaseController
                     'appointment_date' => $data['appointment_date'],
                     'appointment_time' => $data['appointment_time'],
                     'status' => 'pending', 
-                    'notes' => $data['notes']
+                    'notes' => $data['notes'],
+                    'assigned_staff_id' => $data['assigned_staff_id'] ?? null
                 ]
             ]);
         } else {
@@ -370,9 +411,16 @@ class ReceptionistController extends BaseController
         }
 
         $model = new AppointmentModel();
-        $appointments = $model->orderBy('appointment_date', 'ASC')
-                              ->orderBy('appointment_time', 'ASC')
-                              ->findAll();
+        $db = \Config\Database::connect();
+        
+        // Get appointments with staff names for AJAX response
+        $appointments = $db->table('appointments')
+                          ->select('appointments.*, users.full_name as staff_name')
+                          ->join('users', 'users.id = appointments.assigned_staff_id', 'left')
+                          ->orderBy('appointments.appointment_date', 'ASC')
+                          ->orderBy('appointments.appointment_time', 'ASC')
+                          ->get()
+                          ->getResultArray();
 
         return $this->response->setJSON([
             'success' => true,

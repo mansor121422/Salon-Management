@@ -34,6 +34,7 @@ $routes->get('/staff', 'StaffController::index');
 $routes->get('/staff/dashboard', 'StaffController::index');
 $routes->get('/staff/appointments', 'StaffController::appointments');
 $routes->get('/staff/appointments/data', 'StaffController::getAppointments');
+$routes->get('/staff/appointments/details/(:num)', 'StaffController::getAppointmentDetails/$1');
 $routes->post('/staff/appointments/update-status/(:num)', 'StaffController::updateStatus/$1');
 
 // Owner Dashboard

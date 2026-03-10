@@ -4,8 +4,8 @@
 
 <!-- Dashboard Header -->
 <div class="bg-gradient-to-r from-purple-950 via-purple-900 to-indigo-950 rounded-xl p-8 mb-8 shadow-xl">
-    <h1 class="text-white mb-2">Staff Dashboard</h1>
-    <p class="text-purple-200">Welcome, <?= esc($user['full_name']) ?> (<?= esc($user['role']) ?>)</p>
+    <h1 class="text-white mb-2">Welcome, <?= esc(session()->get('full_name')) ?>!</h1>
+    <p class="text-purple-200">View your appointments</p>
 </div>
 
 <!-- Daily Appointment View -->
@@ -112,14 +112,10 @@
                         </span>
                     </td>
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        ${appointment.status !== 'Completed' ? `
-                            <button onclick="updateAppointmentStatus(${appointment.id}, 'completed')" 
-                                    class="bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-1 rounded text-sm font-medium hover:shadow-lg hover:translate-y-[-1px] transition-all">
-                                Mark Complete
-                            </button>
-                        ` : `
-                            <span class="text-green-600 text-sm font-medium">✓ Completed</span>
-                        `}
+                        <button onclick="viewAppointmentDetails(${appointment.id})" 
+                                class="bg-gradient-to-r from-purple-800 to-indigo-900 text-white px-3 py-1 rounded text-sm font-medium hover:shadow-lg hover:translate-y-[-1px] transition-all">
+                            View
+                        </button>
                     </td>
                 </tr>
             `;
@@ -128,51 +124,99 @@
         tbody.innerHTML = html;
     }
 
-    function updateAppointmentStatus(appointmentId, newStatus) {
-        // Show loading state on button
-        const button = event.target;
-        const originalText = button.textContent;
-        button.textContent = 'Updating...';
-        button.disabled = true;
-        button.classList.add('opacity-50', 'cursor-not-allowed');
-
-        fetch('<?= base_url('staff/appointments/update-status/') ?>' + appointmentId, {
-            method: 'POST',
+    function viewAppointmentDetails(appointmentId) {
+        fetch('<?= base_url('staff/appointments/details/') ?>' + appointmentId, {
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: 'status=' + newStatus
+            }
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Reload appointments to reflect the change
-                loadAppointments();
-                
-                // Show success message
-                showFlashMessage('Appointment status updated successfully!', 'success');
+                // Show appointment details in a modal or overlay
+                showAppointmentDetails(data.appointment);
             } else {
-                // Restore button state
-                button.textContent = originalText;
-                button.disabled = false;
-                button.classList.remove('opacity-50', 'cursor-not-allowed');
-                
                 // Show error message
-                showFlashMessage(data.message || 'Failed to update appointment status.', 'error');
+                showFlashMessage(data.message || 'Failed to load appointment details.', 'error');
             }
         })
         .catch(error => {
             console.error('Error:', error);
             
-            // Restore button state
-            button.textContent = originalText;
-            button.disabled = false;
-            button.classList.remove('opacity-50', 'cursor-not-allowed');
-            
             // Show error message
-            showFlashMessage('An error occurred while updating the appointment.', 'error');
+            showFlashMessage('An error occurred while loading the appointment details.', 'error');
         });
+    }
+
+    function showAppointmentDetails(appointment) {
+        // Create modal HTML
+        const modalHtml = `
+            <div id="appointmentModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+                    <div class="bg-gradient-to-r from-purple-950 via-purple-900 to-indigo-950 rounded-t-xl p-6">
+                        <h3 class="text-white text-xl font-bold">Appointment Details</h3>
+                        <button onclick="closeAppointmentModal()" class="absolute top-4 right-4 text-white hover:text-purple-200">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                                <p class="bg-gray-50 px-3 py-2 rounded-lg">${appointment.date}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                                <p class="bg-gray-50 px-3 py-2 rounded-lg">${appointment.time}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+                            <p class="bg-gray-50 px-3 py-2 rounded-lg">${appointment.customer}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Service</label>
+                            <p class="bg-gray-50 px-3 py-2 rounded-lg">${appointment.service}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                            <span class="inline-block px-3 py-2 rounded-lg ${appointment.status === 'Completed' ? 'bg-green-100 text-green-700' : appointment.status === 'Confirmed' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'}">
+                                ${appointment.status}
+                            </span>
+                        </div>
+                        ${appointment.notes ? `
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                                <p class="bg-gray-50 px-3 py-2 rounded-lg">${appointment.notes}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="bg-gray-50 rounded-b-xl p-6 flex justify-end">
+                        <button onclick="closeAppointmentModal()" class="bg-gradient-to-r from-purple-800 to-indigo-900 text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Add modal to body
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        // Prevent background scrolling
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeAppointmentModal() {
+        const modal = document.getElementById('appointmentModal');
+        if (modal) {
+            modal.remove();
+            document.body.style.overflow = 'unset';
+        }
     }
 
     function showFlashMessage(message, type) {

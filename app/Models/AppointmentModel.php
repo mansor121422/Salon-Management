@@ -21,7 +21,8 @@ class AppointmentModel extends Model
         'appointment_time',
         'status',
         'notes',
-        'price'
+        'price',
+        'assigned_staff_id'
     ];
 
     protected bool $allowEmptyInserts = false;
@@ -45,7 +46,8 @@ class AppointmentModel extends Model
         'appointment_date'  => 'required|valid_date',
         'appointment_time'  => 'required',
         'status'            => 'required|in_list[pending,confirmed,completed,cancelled]',
-        'price'             => 'required|numeric|greater_than[0]'
+        'price'             => 'required|numeric|greater_than[0]',
+        'assigned_staff_id' => 'permit_empty|is_natural_no_zero'
     ];
 
     /**

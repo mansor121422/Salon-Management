@@ -59,6 +59,38 @@ class StaffController extends BaseController
         ]);
     }
 
+    public function getAppointmentDetails($appointmentId)
+    {
+        // Validate appointment exists
+        $appointment = $this->appointmentModel->find($appointmentId);
+        if (!$appointment) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Appointment not found'
+            ])->setStatusCode(404);
+        }
+
+        // Format the appointment details for the modal
+        $formattedAppointment = [
+            'id' => $appointment['id'],
+            'date' => date('F j, Y', strtotime($appointment['appointment_date'])),
+            'time' => date('h:i A', strtotime($appointment['appointment_time'])),
+            'customer' => $appointment['customer_name'],
+            'service' => $appointment['service_type'],
+            'status' => ucfirst($appointment['status']),
+            'phone' => $appointment['customer_phone'],
+            'email' => $appointment['customer_email'],
+            'notes' => $appointment['notes'],
+            'price' => $appointment['price'],
+            'created_at' => $appointment['created_at']
+        ];
+
+        return $this->response->setJSON([
+            'success' => true,
+            'appointment' => $formattedAppointment
+        ]);
+    }
+
     public function updateStatus($appointmentId)
     {
         $session = session();

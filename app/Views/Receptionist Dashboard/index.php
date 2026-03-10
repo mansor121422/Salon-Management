@@ -82,31 +82,52 @@
                            value="<?= old('customer_email') ?>">
                 </div>
 
-                <div class="mb-6">
-                    <label for="service_type" class="block mb-2 text-gray-700 font-medium">
-                        Service Type <span class="text-red-500">*</span>
-                    </label>
-                    <select id="service_type" name="service_type" 
-                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all duration-300 cursor-pointer"
-                            required>
-                        <option value="">-- Select Service --</option>
-                        <?php if (!empty($service_prices)): ?>
-                            <?php foreach ($service_prices as $service): ?>
-                                <option value="<?= esc($service->service_name) ?>" data-price="<?= esc($service->price) ?>" <?= old('service_type') == $service->service_name ? 'selected' : '' ?>>
-                                    <?= esc($service->service_name) ?> - ₱<?= number_format($service->price, 2) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <option value="Haircut" <?= old('service_type') == 'Haircut' ? 'selected' : '' ?>>Haircut</option>
-                            <option value="Hair Coloring" <?= old('service_type') == 'Hair Coloring' ? 'selected' : '' ?>>Hair Coloring</option>
-                            <option value="Hair Styling" <?= old('service_type') == 'Hair Styling' ? 'selected' : '' ?>>Hair Styling</option>
-                            <option value="Hair Treatment" <?= old('service_type') == 'Hair Treatment' ? 'selected' : '' ?>>Hair Treatment</option>
-                            <option value="Manicure" <?= old('service_type') == 'Manicure' ? 'selected' : '' ?>>Manicure</option>
-                            <option value="Pedicure" <?= old('service_type') == 'Pedicure' ? 'selected' : '' ?>>Pedicure</option>
-                            <option value="Facial" <?= old('service_type') == 'Facial' ? 'selected' : '' ?>>Facial</option>
-                            <option value="Makeup" <?= old('service_type') == 'Makeup' ? 'selected' : '' ?>>Makeup</option>
-                        <?php endif; ?>
-                    </select>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="service_type" class="block mb-2 text-gray-700 font-medium">
+                            Service Type <span class="text-red-500">*</span>
+                        </label>
+                        <select id="service_type" name="service_type" 
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all duration-300 cursor-pointer"
+                                required>
+                            <option value="">-- Select Service --</option>
+                            <?php if (!empty($service_prices)): ?>
+                                <?php foreach ($service_prices as $service): ?>
+                                    <option value="<?= esc($service->service_name) ?>" data-price="<?= esc($service->price) ?>" <?= old('service_type') == $service->service_name ? 'selected' : '' ?>>
+                                        <?= esc($service->service_name) ?> - ₱<?= number_format($service->price, 2) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <option value="Haircut" <?= old('service_type') == 'Haircut' ? 'selected' : '' ?>>Haircut</option>
+                                <option value="Hair Coloring" <?= old('service_type') == 'Hair Coloring' ? 'selected' : '' ?>>Hair Coloring</option>
+                                <option value="Hair Styling" <?= old('service_type') == 'Hair Styling' ? 'selected' : '' ?>>Hair Styling</option>
+                                <option value="Hair Treatment" <?= old('service_type') == 'Hair Treatment' ? 'selected' : '' ?>>Hair Treatment</option>
+                                <option value="Manicure" <?= old('service_type') == 'Manicure' ? 'selected' : '' ?>>Manicure</option>
+                                <option value="Pedicure" <?= old('service_type') == 'Pedicure' ? 'selected' : '' ?>>Pedicure</option>
+                                <option value="Facial" <?= old('service_type') == 'Facial' ? 'selected' : '' ?>>Facial</option>
+                                <option value="Makeup" <?= old('service_type') == 'Makeup' ? 'selected' : '' ?>>Makeup</option>
+                            <?php endif; ?>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="assigned_staff_id" class="block mb-2 text-gray-700 font-medium">
+                            Assign Staff (Optional)
+                        </label>
+                        <select id="assigned_staff_id" name="assigned_staff_id" 
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all duration-300 cursor-pointer">
+                            <option value="">-- Select Staff Member --</option>
+                            <?php if (!empty($staff_members)): ?>
+                                <?php foreach ($staff_members as $staff): ?>
+                                    <option value="<?= esc($staff->id) ?>" <?= old('assigned_staff_id') == $staff->id ? 'selected' : '' ?>>
+                                        <?= esc($staff->full_name) ?> (<?= esc($staff->username) ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <option value="">No staff members available</option>
+                            <?php endif; ?>
+                        </select>
+                    </div>
                 </div>
 
 
@@ -237,6 +258,7 @@
                             <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Customer</th>
                             <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Phone</th>
                             <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Service</th>
+                            <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Assigned Staff</th>
                             <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Date</th>
                             <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Time</th>
                             <th class="p-4 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Status</th>
@@ -250,6 +272,15 @@
                             <td class="p-4 border-b border-gray-200"><?= esc($appointment['customer_name']) ?></td>
                             <td class="p-4 border-b border-gray-200"><?= esc($appointment['customer_phone']) ?></td>
                             <td class="p-4 border-b border-gray-200"><?= esc($appointment['service_type']) ?></td>
+                            <td class="p-4 border-b border-gray-200">
+                                <?php if (!empty($appointment['staff_name'])): ?>
+                                    <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-indigo-100 text-indigo-800">
+                                        <?= esc($appointment['staff_name']) ?>
+                                    </span>
+                                <?php else: ?>
+                                    <span class="text-gray-500 text-sm italic">Not assigned</span>
+                                <?php endif; ?>
+                            </td>
                             <td class="p-4 border-b border-gray-200"><?= date('M d, Y', strtotime($appointment['appointment_date'])) ?></td>
                             <td class="p-4 border-b border-gray-200"><?= date('h:i A', strtotime($appointment['appointment_time'])) ?></td>
                             <td class="p-4 border-b border-gray-200">
@@ -344,6 +375,10 @@
             <div class="flex justify-between py-3 border-b border-gray-300" id="success-notes-row" style="display: none;">
                 <span class="font-semibold text-gray-900">Notes:</span>
                 <span class="text-gray-600" id="success-notes">-</span>
+            </div>
+            <div class="flex justify-between py-3 border-b border-gray-300" id="success-staff-row" style="display: none;">
+                <span class="font-semibold text-gray-900">Assigned Staff:</span>
+                <span class="text-gray-600" id="success-staff">-</span>
             </div>
         </div>
 
@@ -570,6 +605,13 @@ function showSuccessModal(appointmentData) {
         document.getElementById('success-notes-row').style.display = 'flex';
     } else {
         document.getElementById('success-notes-row').style.display = 'none';
+    }
+    
+    if (appointmentData.assigned_staff_id) {
+        document.getElementById('success-staff').textContent = 'Staff ID: ' + appointmentData.assigned_staff_id;
+        document.getElementById('success-staff-row').style.display = 'flex';
+    } else {
+        document.getElementById('success-staff-row').style.display = 'none';
     }
     
     // Show the success modal with a small delay to ensure DOM is ready
