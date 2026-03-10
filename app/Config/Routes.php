@@ -29,6 +29,17 @@ $routes->get('/receptionist/appointments/all', 'ReceptionistController::getAllAp
 $routes->get('/admin', 'AdminController::index');
 $routes->get('/admin/dashboard', 'AdminController::index');
 
+// Staff Dashboard
+$routes->get('/staff', 'StaffController::index');
+$routes->get('/staff/dashboard', 'StaffController::index');
+$routes->get('/staff/appointments', 'StaffController::appointments');
+$routes->get('/staff/appointments/data', 'StaffController::getAppointments');
+$routes->post('/staff/appointments/update-status/(:num)', 'StaffController::updateStatus/$1');
+
+// Owner Dashboard
+$routes->get('/owner', 'OwnerController::index');
+$routes->get('/owner/dashboard', 'OwnerController::index');
+
 // Admin User Management
 $routes->get('/admin/users/create', 'AdminController::createUser');
 $routes->post('/admin/users/store', 'AdminController::storeUser');

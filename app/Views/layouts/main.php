@@ -35,6 +35,8 @@
                 <?php elseif ($role === 'receptionist'): ?>
                     <a href="<?= base_url('receptionist') ?>" class="text-white hover:text-brand-purple transition-colors">Dashboard</a>
                     <a href="<?= base_url('receptionist?tab=appointments') ?>" class="text-white hover:text-brand-purple transition-colors">Appointments</a>
+                <?php elseif ($role === 'staff'): ?>
+                    <a href="<?= base_url('staff') ?>" class="text-white hover:text-brand-purple transition-colors">Dashboard</a>
                 <?php else: ?>
                     <a href="<?= base_url('dashboard') ?>" class="text-white hover:text-brand-purple transition-colors">Dashboard</a>
                 <?php endif; ?>

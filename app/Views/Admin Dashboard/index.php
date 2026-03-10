@@ -241,6 +241,8 @@
                         <option value="">-- Select Role --</option>
                         <option value="admin" <?= old('role') == 'admin' ? 'selected' : '' ?>>Admin</option>
                         <option value="receptionist" <?= old('role') == 'receptionist' ? 'selected' : '' ?>>Receptionist</option>
+                        <option value="staff" <?= old('role') == 'staff' ? 'selected' : '' ?>>Staff</option>
+                        <option value="owner" <?= old('role') == 'owner' ? 'selected' : '' ?>>Owner</option>
                     </select>
                 </div>
             </div>

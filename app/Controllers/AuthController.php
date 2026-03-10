@@ -59,6 +59,10 @@ class AuthController extends BaseController
                     return redirect()->to(base_url('receptionist'));
                 } elseif (strtolower($roleName) === 'admin') {
                     return redirect()->to(base_url('admin'));
+                } elseif (strtolower($roleName) === 'staff') {
+                    return redirect()->to(base_url('staff'));
+                } elseif (strtolower($roleName) === 'owner') {
+                    return redirect()->to(base_url('owner'));
                 } else {
                     return redirect()->to(base_url('dashboard'));
                 }
