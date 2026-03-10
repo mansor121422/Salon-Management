@@ -37,6 +37,11 @@
                     <a href="<?= base_url('receptionist?tab=appointments') ?>" class="text-white hover:text-brand-purple transition-colors">Appointments</a>
                 <?php elseif ($role === 'staff'): ?>
                     <a href="<?= base_url('staff') ?>" class="text-white hover:text-brand-purple transition-colors">Dashboard</a>
+                <?php elseif ($role === 'owner'): ?>
+                    <a href="<?= base_url('owner') ?>" class="text-white hover:text-brand-purple transition-colors">Dashboard</a>
+                    <a href="<?= base_url('owner?tab=appointments') ?>" class="text-white hover:text-brand-purple transition-colors">Appointments</a>
+                    <a href="<?= base_url('owner?tab=analytics') ?>" class="text-white hover:text-brand-purple transition-colors">Analytics</a>
+                    <a href="<?= base_url('owner?tab=monitoring') ?>" class="text-white hover:text-brand-purple transition-colors">Monitoring</a>
                 <?php else: ?>
                     <a href="<?= base_url('dashboard') ?>" class="text-white hover:text-brand-purple transition-colors">Dashboard</a>
                 <?php endif; ?>
